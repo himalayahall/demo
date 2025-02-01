@@ -39,7 +39,7 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 ## Design
 
 - Reactive Spring Flux application, REST API for replay controls
-- Data -> read from CSV file. FYI - The file had invisible BOM which caused a lot of head scratching before I pinpointed the cause and fixed it (see below)
+- Data -> read from [CSV file](https://github.com/himalayahall/demo/blob/9f346eac082b2ba9300041759bce3413532ba7fa/src/main/resources/marketdata-for-coding-challenge.csv). FYI - The file had invisible BOM which caused a lot of head scratching before I pinpointed the cause and fixed it (see below)
 - Sliding window -> virtual sliding window moves over cached events, during each publishing cycle ALL events under sliding window are published.
 - Two settings control the sliding window and event publication
   - publishTimerMillis ->  controls how often the sliding window is moved. Default: 10 ms, configurable via **application.properties**.
