@@ -17,7 +17,7 @@ public class ReplaySessionImpl implements ReplaySession {
     private final Date created = new Date(); // session creation timestamp
     private final long publishTimerMillis; // determines how often events are published
     private final String sessionId;
-    private long replayClockMillis; // determines how many events are published
+    private double replayClockMillis;
 
     // Event stream
     private final List<MarketDataEvent> events;
@@ -69,7 +69,7 @@ public class ReplaySessionImpl implements ReplaySession {
                     }
 
                     // Advance the simulation clock based on the publishing speed
-                    replayClockMillis += (long) (replaySpeed.get() * publishTimerMillis);
+                    replayClockMillis += (replaySpeed.get() * publishTimerMillis);
                 });
     }
 
