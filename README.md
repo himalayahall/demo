@@ -62,13 +62,21 @@ and replayClockMillis advances in increment of (replaySpeed $\times$ publishTime
 
 - Unit tests are used to test basic functionality replay service.
 
-## Running
+## Installation
 
-- Clone project, load in VSCode (or your favorite IDE), launch application
+- Make sure you have Java (17 or higher) installed on your machine
+- Clone project
+
+### Running
+
+- Load project in VSCode (or your favorite IDE), open terminal in VSCode (to view service logs), run application from VSCode
 
 ## API
-- Documentation is [here](https://github.com/himalayahall/demo/blob/5bbd1c5971250a09ce0872e3b4562cf2fa36e17a/api-documentation.pdf)
-- Below are 2 ways of using this service:
+### Documentation
+- Documentation can be found [here](https://github.com/himalayahall/demo/blob/5bbd1c5971250a09ce0872e3b4562cf2fa36e17a/api-documentation.pdf).
+
+### Using the API
+- Below are 2 no-code ways of using this service:
 
   1. Spring OpenAPI browser interface is baked in. Start the service and use the Open API at http://localhost:8080/swagger-ui.html. All controls work fine through the OpenAPI interface, **except** 
 the streaming of market data events is not rendered on the browser. For that, you can use *Curl*.
@@ -76,9 +84,9 @@ the streaming of market data events is not rendered on the browser. For that, yo
   2. Use Curl to access the API. For example, `curl -X GET http://localhost:8080/session/subscribe/e8cc93be-3723-4c37-8681-b3fa6d3b7a79` to subscribe for events on session 
 `e8cc93be-3723-4c37-8681-b3fa6d3b7a79`.
 
-### Testing Recipe
+## Does it work as expected? A recipe for kicking the tires
 
-  1. Start replay service
+  1. [Start replay service](README.md#running)
   2. Go to http://localhost:8080/swagger-ui.html.
   3. Click **`POST /mktdata/session`**.
   4. Click **`Try it out`**.
@@ -91,5 +99,5 @@ the streaming of market data events is not rendered on the browser. For that, yo
   10. Now for the fun part! Click `/mktdata/session/rewind/{sessionId}`, click `Try it out`, paste session ID into `Session Id` textbox, click `Execute`. The session has been rewound.
   11. Now double the replay speeed: click `/mktdata/session/speed/{sessionId}/{speed}`, click `Try it out`, paste session ID into `Session Id` textbox, enter 2.0 in `speed` textbox. Click `Execute`. Replay speed has been doubled.
   12. Restart the session (repeat steps 6-9), events will  be streamed at the new replay speed. When this replay session finishes take a look at the service log tail. Replay **duration** should be approximately *half* the previous replay session since the stream was replayed at *twice* the normal speed.
-  13. One more test to get a sense of the raw performance of replay server. Rewind session again (see step 10). Now make the replay speed (see step 11) very large, e.g. `10000.0`. Start the replay session (see steps 6-9). When this replay session finishes take a look the service log tail. Replay duration will be a very small number (milliseconds). This shows that the replay service is capable of publishing events at a high rate (3452 events published in sub-second). This is clearly not testing the sevice under high load, but this can  be done quite readily (left as an exercise to the reader).
+  13. One more test to get a sense of the raw performance of replay server. Rewind session again (see step 10). Now make the replay speed (see step 11) very large, e.g. `10000.0`. Start the replay session (see steps 6-9). When this replay session finishes take a look the service log tail. Replay duration will be a very small number (milliseconds). This shows that the replay service is capable of publishing events at a high rate (3452 events published in sub-second). A test with 2 simultaneous *fast speed* sessions showed comparable performance, with minimal degradation in  throughput. Testing of the sevice under high load is warranted to establish performance profile; it is left up to the reader as an exercise.
 
