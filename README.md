@@ -40,10 +40,9 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 
 ### Functional
 
-1. Web clients consume market data stream over the internet.
-2. Market data events are streamed to clients.
-3. Multiple clients - i.e. concurrent replay sessions.
-4. Clients can control the following replay parameters:
+1. Stream market data events to Web clients.
+2. Allow multiple clients - i.e. mujst support concurrent replay sessions.
+3. Clients can control the following replay parameters:
    - Start and Stop replay session.
    - Reset session - i.e. rewind to beginning of market data sesison.
    - Set replay speed - i.e. speed up (1.0, N) or slow down (0.0, 1.0)
@@ -66,7 +65,7 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 - Sliding window -> virtual sliding window moves over cached events, during each publishing cycle ALL events under sliding window are published.
 - Two settings control the sliding window and event publication
   - publishTimerMillis ->  controls how often the sliding window is moved. Default: 1 millisecond, configurable via **application.properties**.
-  - replayClockMillis -> how far time has progressed in a replay session. It effectively controls the sliding window size. When session is created or rewound
+  - replayClockMillis -> how far time has progressed in a replay session. It effectively controls the sliding window size.
 replayClockMillis is set to the timestamp of first data event. At each publishing cycle all *unpublished* events with timestamp <= replayClockMillis are published,
 and replayClockMillis advances in increment of (replaySpeed $\times$ publishTimerMillis) depending on the *replaySpeed* (see below).
 
