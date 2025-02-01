@@ -1,13 +1,14 @@
 package com.pragma.demo.controller;
 
 import jakarta.validation.constraints.Positive;
+import lombok.extern.slf4j.Slf4j;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import com.pragma.demo.service.MarketDataEvent;
-import com.pragma.demo.service.MarketDataService;
+import com.pragma.demo.service.ReplayService;
 import com.pragma.demo.service.ReplayException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -17,7 +18,7 @@ import reactor.core.publisher.Mono;
 public class MarketDataController {
 
     @Autowired
-    private MarketDataService marketDataService;
+    private ReplayService marketDataService;
 
     @PostMapping("/session")
     public Mono<String> createSession() {
@@ -61,7 +62,8 @@ public class MarketDataController {
     }
 
     @PutMapping("/session/jump/{sessionId}/{eventId}")
-    public Mono<String> jumpToEvent(@PathVariable String sessionId, @PathVariable @Positive int eventId) {
+    public Mono<String> jumpToEvent(@PathVariable String sessionId,
+            @PathVariable @Positive int eventId) {
         return Mono.fromCallable(() -> {
             validateUUID(sessionId); // Runs in a reactive-safe way
             return sessionId;
@@ -78,8 +80,8 @@ public class MarketDataController {
         return Mono.fromCallable(() -> {
             validateUUID(sessionId); // Runs in a reactive-safe way
             return sessionId;
-        }).then(Mono.fromRunnable(() -> marketDataService.setReplaySpeed(sessionId, speed))) // Runs
-                                                                                             // non-blocking
+        }).then(Mono.fromRunnable(() -> marketDataService.replaySpeed(sessionId, speed))) // Runs
+                                                                                          // non-blocking
                 .thenReturn("Replay speed set to " + speed + " for session " + sessionId)
                 .onErrorResume(ReplayException.class, e -> Mono
                         .error(new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage())));
@@ -90,7 +92,7 @@ public class MarketDataController {
         return Mono.fromCallable(() -> {
             validateUUID(sessionId); // This may throw exceptions
             return sessionId;
-        }).thenMany(marketDataService.getEventStream(sessionId)) // Continue if validation passes
+        }).thenMany(marketDataService.subscribe(sessionId)) // Continue if validation passes
                 .onErrorResume(ResponseStatusException.class, e -> Flux.error(e))
                 .onErrorResume(ReplayException.class, e -> Flux
                         .error(new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage())));

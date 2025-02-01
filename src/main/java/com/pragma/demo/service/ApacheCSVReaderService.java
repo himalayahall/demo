@@ -4,6 +4,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.input.BOMInputStream;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
@@ -14,17 +15,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 @Service("ApacheCSVReader")
 public class ApacheCSVReaderService implements CSVReaderService {
-        public List<MarketDataEvent> readMarketDataEvents(String filePath) throws IOException {
+        public List<MarketDataEvent> readMarketDataEvents(Resource resource) throws IOException {
                 List<MarketDataEvent> events = new ArrayList<>();
-                try (InputStream inputStream = Files.newInputStream(Paths.get(filePath));
+                try (InputStream inputStream = resource.getInputStream();
                                 Reader reader = new InputStreamReader(
                                                 new BOMInputStream(inputStream),
                                                 StandardCharsets.UTF_8);

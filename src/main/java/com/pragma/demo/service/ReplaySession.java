@@ -1,12 +1,13 @@
 package com.pragma.demo.service;
 
+import java.util.Date;
 import reactor.core.publisher.Flux;
 
 /**
  * Replay session.
  *
  */
-public interface MarketDataSession {
+public interface ReplaySession {
     /**
      * Start session. Subscriber, if any, to session event stream will start receiving events.
      * 
@@ -24,11 +25,17 @@ public interface MarketDataSession {
     void rewind();
 
     /**
-     * Set replay speed. 
+     * Set replay speed.
      *
      * @param speed Replace speed. Must be POSITIVE (> 0.0)
      */
-    void setReplaySpeed(double speed);
+    void replaySpeed(double speed);
+
+    /**
+     * Jump to event.
+     * @param eventId 
+     */
+    void jumpToEvent(int eventId);
 
     /**
      * Subscribe to session event stream.
@@ -36,4 +43,18 @@ public interface MarketDataSession {
      * @return Session event flux.
      */
     Flux<MarketDataEvent> subscribe();
+
+    /**
+     * Get session creation timestamp.
+     * 
+     * @return Session creation timestamp.
+     */
+    Date created();
+
+    /**
+     * Get session id.
+     * 
+     * @return
+     */
+    String sessionId();
 }
