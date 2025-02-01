@@ -92,7 +92,6 @@ the streaming of market data events is not rendered on the browser. For that, yo
   4. Click **`Try it out`**.
   5. Click **`Execute`**. A new session will be created. Copy the session ID from the **`Response body`**.
 <a id="step-6"></a> 
-
   6. Click `PUT /mktdata/session/start/{sessionId}`.
   7. Click `Try it out`.
   8. Paste session ID into `Session Id` textbox.
@@ -101,7 +100,6 @@ the streaming of market data events is not rendered on the browser. For that, yo
 <a id="step-10"></a> 
   10. Now for the fun part! Click `/mktdata/session/rewind/{sessionId}`, click `Try it out`, paste session ID into `Session Id` textbox, click `Execute`. The session has been rewound.
 <a id="step-11"></a>
-
   11. Now double the replay speeed: click `/mktdata/session/speed/{sessionId}/{speed}`, click `Try it out`, paste session ID into `Session Id` textbox, enter 2.0 in `speed` textbox. Click `Execute`. Replay speed has been doubled.
   12. Restart the session (repeat steps 6-9), events will  be streamed at the new replay speed. When this replay session finishes take a look at the service log tail. Replay **duration** should be approximately *half* the previous replay session since the stream was replayed at *twice* the normal speed.
   13. One more test to get a sense of the raw performance of replay server. Rewind session again (see [step 10](#step-10)). Now make the replay speed (see [step 11](#step-11)) very large, e.g. `10000.0`. Start the replay session (see [step 6-9](#step-6)). When this replay session finishes take a look the service log tail. Replay duration will be a very small number (milliseconds). This shows that the replay service is capable of publishing events at a high rate (3452 events published in sub-second). A test with 2 simultaneous *fast speed* sessions showed comparable performance, with minimal degradation in  throughput. Testing of the sevice under high load is warranted to establish performance profile; it is left up to the reader as an exercise.
