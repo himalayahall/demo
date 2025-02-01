@@ -73,7 +73,7 @@ and replayClockMillis advances in increment of (replaySpeed $\times$ publishTime
 
 ## API
 ### Documentation
-- Documentation can be found [here](https://github.com/himalayahall/demo/blob/5bbd1c5971250a09ce0872e3b4562cf2fa36e17a/api-documentation.pdf).
+- OpenAPI Html Documentation can be found [here](https://github.com/himalayahall/demo/blob/5bbd1c5971250a09ce0872e3b4562cf2fa36e17a/api-documentation.pdf).
 
 ### Using the API
 - Below are 2 no-code ways of using this service:
