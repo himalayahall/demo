@@ -2,6 +2,8 @@
 
 ## Tech Stack
 
+[step 6-9](#step-6)
+
 - Java, Spring Boot, Spring WebFlux, Google Guava (cache), Gradle, JUnit, Mockito, VS Code
 
 ## Assumptions
