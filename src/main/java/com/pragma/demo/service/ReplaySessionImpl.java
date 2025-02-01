@@ -15,8 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 public class ReplaySessionImpl implements ReplaySession {
 
     private final Date created = new Date(); // session creation timestamp
-    private final long replayClockIncMillis; // determines how often events are published
-    private long simulationClockMillis; // determines how many events are published
+    private final long publishTimerMillis; // determines how often events are published
+    private long replayClockMillis; // determines how many events are published
     private final String sessionId;
 
     // Event stream
@@ -39,10 +39,10 @@ public class ReplaySessionImpl implements ReplaySession {
 
 
     public ReplaySessionImpl(String sessionId, List<MarketDataEvent> events,
-            long replayClockIncMillis) {
+            long publishTimerMillis) {
         this.sessionId = sessionId;
         this.events = events;
-        this.replayClockIncMillis = replayClockIncMillis;
+        this.publishTimerMillis = publishTimerMillis;
 
         rewind();
     }
@@ -52,12 +52,12 @@ public class ReplaySessionImpl implements ReplaySession {
         log.info("start session: {}", sessionId);
 
         isRunning.set(true);
-        Flux.interval(Duration.ofMillis(replayClockIncMillis), Schedulers.boundedElastic())
+        Flux.interval(Duration.ofMillis(publishTimerMillis), Schedulers.boundedElastic())
                 .takeWhile(tick -> isRunning.get() && currentIndex.get() < events.size())
                 .subscribe(tick -> {
                     // Publish all events with timestamp <= simulationClockMillis
                     while (currentIndex.get() < events.size() && events.get(currentIndex.get())
-                            .timestamp() <= simulationClockMillis) {
+                            .timestamp() <= replayClockMillis) {
                         MarketDataEvent event = events.get(currentIndex.getAndIncrement());
                         log.info("replay event: {} on session: {}", event, sessionId);
                         Sinks.EmitResult result = eventSink.tryEmitNext(event);
@@ -69,7 +69,7 @@ public class ReplaySessionImpl implements ReplaySession {
                     }
 
                     // Advance the simulation clock based on the publishing speed
-                    simulationClockMillis += (long) (replaySpeed.get() * replayClockIncMillis);
+                    replayClockMillis += (long) (replaySpeed.get() * publishTimerMillis);
                 });
     }
 
@@ -85,11 +85,11 @@ public class ReplaySessionImpl implements ReplaySession {
         log.info("rewind session: {}", sessionId);
         currentIndex.set(0);
         if (!events.isEmpty())
-            this.simulationClockMillis = events.get(0).timestamp(); // Reset clock to the first
+            this.replayClockMillis = events.get(0).timestamp(); // Reset clock to the first
                                                                     // event's
         // timestamp
         else
-            this.simulationClockMillis = 0;
+            this.replayClockMillis = 0;
     }
 
     @Override
@@ -98,7 +98,7 @@ public class ReplaySessionImpl implements ReplaySession {
         for (int i = 0; i < events.size(); i++) {
             if (events.get(i).id() == eventId) {
                 currentIndex.set(i);
-                simulationClockMillis = events.get(i).timestamp(); // Set clock to the timestamp of
+                replayClockMillis = events.get(i).timestamp(); // Set clock to the timestamp of
                                                                    // the
                 // target event
                 return;

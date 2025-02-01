@@ -25,7 +25,7 @@ import java.util.UUID;
  * see the exact same set of events and modifying the CSV file will not affect until the service is
  * restarted.
  * 
- * During replay of market data events, replayClockIncMillis if used to to schedule publications -
+ * During replay of market data events, publishTimerMillis if used to to schedule publications -
  * e.g. if this set to 10 then events are published in 10 millisec publication windows. The
  * publishing scheduler sleeps for 10 millisec between publications.
  */
@@ -36,8 +36,8 @@ public class ReplayService {
     private final CSVReaderService csvReader;
     private List<MarketDataEvent> events;
 
-    @Value("${app.market.replay.replayClockIncMillis}")
-    private long replayClockIncMillis;
+    @Value("${app.market.replay.publishTimerMillis}")
+    private long publishTimerMillis;
 
     @Value("${app.market.replay.pathToFile}")
     private String pathToFile;
@@ -68,7 +68,7 @@ public class ReplayService {
      */
     public String createSession() {
         String sessionId = UUID.randomUUID().toString();
-        sessions.put(sessionId, new ReplaySessionImpl(sessionId, events, replayClockIncMillis));
+        sessions.put(sessionId, new ReplaySessionImpl(sessionId, events, publishTimerMillis));
         log.info("create session: {}", sessionId);
         return sessionId;
     }
@@ -79,7 +79,7 @@ public class ReplayService {
      * @param sessionId Session id.
      */
     public void start(String sessionId) {
-        Optional<ReplaySessionImpl> session = Optional.of(sessions.get(sessionId));
+        Optional<ReplaySessionImpl> session = Optional.ofNullable(sessions.get(sessionId));
         if (session.isPresent()) {
             session.get().start();
         }
@@ -91,7 +91,7 @@ public class ReplayService {
      * @param sessionId Session id.
      */
     public void stop(String sessionId) {
-        Optional<ReplaySessionImpl> session = Optional.of(sessions.get(sessionId));
+        Optional<ReplaySessionImpl> session = Optional.ofNullable(sessions.get(sessionId));
         if (session.isPresent()) {
             session.get().stop();
         }
@@ -103,7 +103,7 @@ public class ReplayService {
      * @param sessionId Session id.
      */
     public void rewind(String sessionId) {
-        Optional<ReplaySessionImpl> session = Optional.of(sessions.get(sessionId));
+        Optional<ReplaySessionImpl> session = Optional.ofNullable(sessions.get(sessionId));
         if (session.isPresent()) {
             session.get().rewind();
         }
@@ -116,7 +116,7 @@ public class ReplayService {
      * @param eventId Event id.
      */
     public void jumpToEvent(String sessionId, int eventId) {
-        Optional<ReplaySessionImpl> session = Optional.of(sessions.get(sessionId));
+        Optional<ReplaySessionImpl> session = Optional.ofNullable(sessions.get(sessionId));
         if (session.isPresent()) {
             session.get().jumpToEvent(eventId);
         }
@@ -129,7 +129,7 @@ public class ReplayService {
      * @param speed Replay speed. Must be Positive (> 0.0).
      */
     public void replaySpeed(String sessionId, double speed) {
-        Optional<ReplaySessionImpl> session = Optional.of(sessions.get(sessionId));
+        Optional<ReplaySessionImpl> session = Optional.ofNullable(sessions.get(sessionId));
         if (session.isPresent()) {
             session.get().replaySpeed(speed);
         }
@@ -142,7 +142,7 @@ public class ReplayService {
      * @return Session event flux.
      */
     public Flux<MarketDataEvent> subscribe(String sessionId) {
-        Optional<ReplaySessionImpl> session = Optional.of(sessions.get(sessionId));
+        Optional<ReplaySessionImpl> session = Optional.ofNullable(sessions.get(sessionId));
         if (session.isPresent()) {
             return session.get().subscribe();
         }

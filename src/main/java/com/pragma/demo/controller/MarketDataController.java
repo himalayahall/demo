@@ -9,24 +9,36 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import com.pragma.demo.service.MarketDataEvent;
 import com.pragma.demo.service.ReplayService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.pragma.demo.service.ReplayException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @RestController
 @RequestMapping("/mktdata")
+@Tag(name = "Market Data", description = "APIs for streaming market data")
 public class MarketDataController {
 
     @Autowired
     private ReplayService marketDataService;
 
     @PostMapping("/session")
+    @Operation(summary = "Create session", description = "Create a new session.")
+    @ApiResponse(responseCode = "200", description = "Successfully created session")
     public Mono<String> createSession() {
         return Mono.just(marketDataService.createSession());
     }
 
     @PutMapping("/session/start/{sessionId}")
-    public Mono<String> start(@PathVariable String sessionId) {
+    @Operation(summary = "Start replay", description = "Start replay for a session.")
+    @ApiResponse(responseCode = "200", description = "Successfully started")
+    @ApiResponse(responseCode = "400", description = "Bad request")
+    public Mono<String> start(@PathVariable @Parameter(name = "sessionId",
+            description = "Session Id (UUID)", required = true) String sessionId) {
         return Mono.fromCallable(() -> {
             validateUUID(sessionId); // Runs in a reactive-safe way
             return sessionId;
@@ -38,7 +50,11 @@ public class MarketDataController {
     }
 
     @PutMapping("/session/stop/{sessionId}")
-    public Mono<String> stop(@PathVariable String sessionId) {
+    @Operation(summary = "Stop replay", description = " Stop replay for a session.")
+    @ApiResponse(responseCode = "200", description = "Successfully stopped")
+    @ApiResponse(responseCode = "400", description = "Bad request")
+    public Mono<String> stop(@PathVariable @Parameter(name = "sessionId",
+            description = "Session Id (UUID)", required = true) String sessionId) {
         return Mono.fromCallable(() -> {
             validateUUID(sessionId); // Runs in a reactive-safe way
             return sessionId;
@@ -50,7 +66,12 @@ public class MarketDataController {
     }
 
     @PutMapping("/session/rewind/{sessionId}")
-    public Mono<String> rewind(@PathVariable String sessionId) {
+    @Operation(summary = "Rewind session",
+            description = "Rewind a session to the beginning. Must call start after this to start streaming")
+    @ApiResponse(responseCode = "200", description = "Successfully rewound")
+    @ApiResponse(responseCode = "400", description = "Bad request")
+    public Mono<String> rewind(@PathVariable @Parameter(name = "sessionId",
+            description = "Session Id (UUID)", required = true) String sessionId) {
         return Mono.fromCallable(() -> {
             validateUUID(sessionId); // Runs in a reactive-safe way
             return sessionId;
@@ -62,8 +83,16 @@ public class MarketDataController {
     }
 
     @PutMapping("/session/jump/{sessionId}/{eventId}")
-    public Mono<String> jumpToEvent(@PathVariable String sessionId,
-            @PathVariable @Positive int eventId) {
+    @Operation(summary = "Jump to session event",
+            description = "Jump to a specific event in a session. Must call start after this to start streaming")
+    @ApiResponse(responseCode = "200", description = "Successfully jumped to event")
+    @ApiResponse(responseCode = "400", description = "Bad request")
+    public Mono<String> jumpToEvent(
+            @PathVariable @Parameter(name = "sessionId", description = "Session Id (UUID)",
+                    required = true) String sessionId,
+            @PathVariable @Parameter(name = "eventId",
+                    description = "Event Id. Must be positive (> 0)",
+                    required = true) @Positive int eventId) {
         return Mono.fromCallable(() -> {
             validateUUID(sessionId); // Runs in a reactive-safe way
             return sessionId;
@@ -75,8 +104,16 @@ public class MarketDataController {
     }
 
     @PutMapping("/session/speed/{sessionId}")
-    public Mono<String> setReplaySpeed(@PathVariable String sessionId,
-            @RequestParam @Positive double speed) {
+    @Operation(summary = "Set replay speed",
+            description = "Set replay speed for a session. Must call start after this to start streaming")
+    @ApiResponse(responseCode = "200", description = "Successfully set replay speed")
+    @ApiResponse(responseCode = "400", description = "Bad request")
+    public Mono<String> replaySpeed(
+            @PathVariable @Parameter(name = "sessionId", description = "Session Id (UUID)",
+                    required = true) String sessionId,
+            @RequestParam @Parameter(name = "speed",
+                    description = "Must be positive (> 0.0). Default is 1.0. Value less than 1.0 will slow down replay. Value greater than 1.0 will speed up replay.",
+                    required = true) @Positive double speed) {
         return Mono.fromCallable(() -> {
             validateUUID(sessionId); // Runs in a reactive-safe way
             return sessionId;
@@ -88,14 +125,19 @@ public class MarketDataController {
     }
 
     @GetMapping(value = "/session/stream/{sessionId}", produces = "text/event-stream")
-    public Flux<MarketDataEvent> streamEvents(@PathVariable String sessionId) {
+    @Operation(summary = "Subscribe to market data events",
+            description = "Subscribe to market data events for a session. Must call start after this to start streaming")
+    @ApiResponse(responseCode = "200", description = "Successfully subscribed")
+    @ApiResponse(responseCode = "400", description = "Bad request")
+    public Flux<MarketDataEvent> subscribe(@PathVariable @Parameter(name = "sessionId",
+            description = "Session Id (UUID)", required = true) String sessionId) {
         return Mono.fromCallable(() -> {
             validateUUID(sessionId); // This may throw exceptions
             return sessionId;
         }).thenMany(marketDataService.subscribe(sessionId)) // Continue if validation passes
                 .onErrorResume(ResponseStatusException.class, e -> Flux.error(e))
-                .onErrorResume(ReplayException.class, e -> Flux
-                        .error(new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage())));
+                .onErrorResume(ReplayException.class, e -> Flux.error(
+                        new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage())));
     }
 
     private void validateUUID(String sessionId) {
