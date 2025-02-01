@@ -1,4 +1,4 @@
-# Market Data Replay Service 
+# Market Data Simulator 
 
 ## Tech Stack
 
@@ -36,6 +36,29 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 
 10. Security (Https) and authentication out of scope
 
+## Requirements
+
+### Functional
+
+1. Web clients consume market data stream over the internet.
+2. Market data events are streamed to clients.
+3. Multiple clients - i.e. concurrent replay sessions.
+4. Clients can control the following replay parameters:
+   - Start and Stop replay session.
+   - Reset session - i.e. rewind  to beginning of market data sesison.
+   - Set replay speed - i.e. speed up (1.0, N) or slow down (0.0, 1.0)
+   - Fast forward replay session - i.e. skip market data events in replay session.
+   - Goto event - i.e. jump to specific market data event in replay session.
+     
+### Non-Functional
+
+1. Performance
+   - Throughput -  replay at sustained high throughput (up to 3000 events/sec).
+   - Scale - support large number of clients (0, 100) without throughput degradation.
+   - Stability
+2. Code Quality
+   - Code should be production quality with good documentation.
+     
 ## Design
 
 - Reactive Spring Flux application, REST API for replay controls
@@ -102,5 +125,12 @@ the streaming of market data events is not rendered on the browser. For that, yo
 <a id="step-11"></a>
   11. Now double the replay speeed: click `/mktdata/session/speed/{sessionId}/{speed}`, click `Try it out`, paste session ID into `Session Id` textbox, enter 2.0 in `speed` textbox. Click `Execute`. Replay speed has been doubled.
   12. Restart the session (repeat [step 6-9](#step-6)), events will  be streamed at the new replay speed. When this replay session finishes take a look at the service log tail. Replay **duration** should be approximately *half* the previous replay session since the stream was replayed at *twice* the normal speed.
-  13. One more test to get a sense of the raw performance of replay server. Rewind session again (see [step 10](#step-10)). Now make the replay speed (see [step 11](#step-11)) very large, e.g. `10000.0`. Start the replay session (see [step 6-9](#step-6)). When this replay session finishes take a look the service log tail. Replay duration will be a very small number (milliseconds). This shows that the replay service is capable of publishing events at a high rate (3452 events published in sub-second). A test with 2 simultaneous *fast speed* sessions showed comparable performance, with minimal degradation in  throughput. Testing of the sevice under high load is warranted to establish performance profile; it is left up to the reader as an exercise.
+  13. One more test to get a sense of the raw performance of replay server. Rewind session again (see [step 10](#step-10)). Now make the replay speed (see [step 11](#step-11)) very large, e.g. `10000.0`. Start the replay session (see [step 6-9](#step-6)). When this replay session finishes take a look the service log tail. Replay duration will be a very small number (milliseconds).
+      
+### Conclusion
+
+As above tests demonstrate, this replay server satisfies all [Functional](#Functional) and [Non-Functional](#Non-Functional) requirements. In particular, the replay service is capable of publishing events at a high rate (3452 events published in sub-second). A test with 2 simultaneous *fast speed* sessions showed comparable performance, with minimal degradation in  throughput. Testing of the sevice under high load is warranted to establish performance profile; it is left up to the reader as an exercise.  
+
+Performance would be increased through horizontal scaling - simply launch additional replay server processes with a Load Balancer, using sticky connections, and distribute clients among these servers. Other optimizations may be to use a wire encoding like Google Proto to cut down network bandwidth and large datasets could be cached in a distributed cache like Redis. 
+
 
