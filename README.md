@@ -65,7 +65,7 @@ will advance by 20 ms, even though only 10 ms have passed on the system clock (p
 - Clone project, load in VSCode (or your favorite IDE), launch application
 
 ## API
-- Documentation is [here](/himalayahall/demo/blob/f0d0e7bf3b3ee5e3bf8b4e38404bc64c2865d09a/api-documentation.pdf)
+- Documentation is [here](https://github.com/himalayahall/demo/blob/5bbd1c5971250a09ce0872e3b4562cf2fa36e17a/api-documentation.pdf)
 - Below are 2 ways of headless interaction with this service:
 
   1. Spring OpenAPI browser interface is baked in. Navigate to http://localhost:8080/swagger-ui.html on your browser. All controls work through the OpenAPI interface, **except** 
