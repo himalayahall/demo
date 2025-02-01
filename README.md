@@ -72,5 +72,3 @@ the streaming of market data events is not rendered on the browser.
 
   3. Use CURL to access the API. For example, *curl -X GET http://localhost:8080/mktdata/session/stream/e8cc93be-3723-4c37-8681-b3fa6d3b7a79* to subscribe for events on session 
 e8cc93be-3723-4c37-8681-b3fa6d3b7a79.
-
-
