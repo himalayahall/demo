@@ -27,13 +27,14 @@ public interface ReplaySession {
     /**
      * Set replay speed.
      *
-     * @param speed Replace speed. Must be POSITIVE (> 0.0)
+     * @param speed Replay speed. Must be POSITIVE (> 0.0)
      */
     void replaySpeed(double speed);
 
     /**
      * Jump to event.
-     * @param eventId 
+     * 
+     * @param eventId
      */
     void jumpToEvent(int eventId);
 

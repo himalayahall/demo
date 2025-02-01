@@ -51,10 +51,21 @@ public class ReplayService {
         this.csvReader = context.getBean(implementation, CSVReaderService.class);
     }
 
+    /**
+     * Check if session exists.
+     * 
+     * @param sessionId Session id.
+     * @return True if session exists, false otherwise.
+     */
     public boolean isSession(String sessionId) {
         return sessions.containsKey(sessionId);
     }
 
+    /**
+     * Create a new session.
+     * 
+     * @return
+     */
     public String createSession() {
         String sessionId = UUID.randomUUID().toString();
         sessions.put(sessionId, new ReplaySessionImpl(sessionId, events, replayClockIncMillis));
@@ -62,6 +73,11 @@ public class ReplayService {
         return sessionId;
     }
 
+    /**
+     * Start session.
+     * 
+     * @param sessionId Session id.
+     */
     public void start(String sessionId) {
         Optional<ReplaySessionImpl> session = Optional.of(sessions.get(sessionId));
         if (session.isPresent()) {
@@ -69,6 +85,11 @@ public class ReplayService {
         }
     }
 
+    /**
+     * Stop session.
+     * 
+     * @param sessionId Session id.
+     */
     public void stop(String sessionId) {
         Optional<ReplaySessionImpl> session = Optional.of(sessions.get(sessionId));
         if (session.isPresent()) {
@@ -76,6 +97,11 @@ public class ReplayService {
         }
     }
 
+    /**
+     * Rewind session.
+     * 
+     * @param sessionId Session id.
+     */
     public void rewind(String sessionId) {
         Optional<ReplaySessionImpl> session = Optional.of(sessions.get(sessionId));
         if (session.isPresent()) {
@@ -83,6 +109,12 @@ public class ReplayService {
         }
     }
 
+    /**
+     * Jump to session event.
+     * 
+     * @param sessionId Session id.
+     * @param eventId Event id.
+     */
     public void jumpToEvent(String sessionId, int eventId) {
         Optional<ReplaySessionImpl> session = Optional.of(sessions.get(sessionId));
         if (session.isPresent()) {
@@ -90,6 +122,12 @@ public class ReplayService {
         }
     }
 
+    /**
+     * Set replay speed.
+     * 
+     * @param sessionId Session id.
+     * @param speed Replay speed. Must be Positive (> 0.0).
+     */
     public void replaySpeed(String sessionId, double speed) {
         Optional<ReplaySessionImpl> session = Optional.of(sessions.get(sessionId));
         if (session.isPresent()) {
@@ -97,6 +135,12 @@ public class ReplayService {
         }
     }
 
+    /**
+     * Subscribe to session event stream.
+     * 
+     * @param sessionId Session id.
+     * @return Session event flux.
+     */
     public Flux<MarketDataEvent> subscribe(String sessionId) {
         Optional<ReplaySessionImpl> session = Optional.of(sessions.get(sessionId));
         if (session.isPresent()) {

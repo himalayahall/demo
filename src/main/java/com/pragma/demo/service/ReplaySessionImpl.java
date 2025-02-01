@@ -115,7 +115,7 @@ public class ReplaySessionImpl implements ReplaySession {
 
     @Override
     public Flux<MarketDataEvent> subscribe() {
-        log.info("subscribe session: {}", sessionId);
+        log.info("subscribe to session: {}", sessionId);
         return eventFlux;
     }
 
