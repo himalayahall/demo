@@ -45,7 +45,7 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 3. Multiple clients - i.e. concurrent replay sessions.
 4. Clients can control the following replay parameters:
    - Start and Stop replay session.
-   - Reset session - i.e. rewind  to beginning of market data sesison.
+   - Reset session - i.e. rewind to beginning of market data sesison.
    - Set replay speed - i.e. speed up (1.0, N) or slow down (0.0, 1.0)
    - Fast forward replay session - i.e. skip market data events in replay session.
    - Goto event - i.e. jump to specific market data event in replay session.
@@ -83,7 +83,7 @@ and replayClockMillis advances in increment of (replaySpeed $\times$ publishTime
 
 ## Test
 
-- Unit tests are used to test basic functionality replay service.
+- Unit tests are used to test basic functionality of the replay service including Start, Stop, Set Replay Speed, Rewind (Reset), Forward, Jump to Event.
 
 ## Installation
 
