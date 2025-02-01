@@ -20,21 +20,24 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @RestController
 @RequestMapping("/mktdata")
-@Tag(name = "Market Data", description = "APIs for streaming market data")
+@Tag(name = "Market Data Replay",
+                description = "APIs for streaming pre-recorded market data. Provides APIs to create session, start, stop, rewind, jump, forward, and set replay speed.")
 public class MarketDataController {
 
         @Autowired
         private ReplayService marketDataService;
 
         @PostMapping("/session")
-        @Operation(summary = "Create session", description = "Create a new session. Call start")
+        @Operation(summary = "Create replay session",
+                        description = "Create new replay session. Make sure to subscribe to session by calling stream.")
         @ApiResponse(responseCode = "200", description = "Successfully created session")
         public Mono<String> createSession() {
                 return Mono.just(marketDataService.createSession());
         }
 
         @PutMapping("/session/start/{sessionId}")
-        @Operation(summary = "Start replay", description = "Start streaming.")
+        @Operation(summary = "Start replay session.",
+                        description = "Start streaming events from replay session. A stopped replay session will start from previous saved state. It is a no-op for running sessions.")
         @ApiResponse(responseCode = "200", description = "Successfully started")
         @ApiResponse(responseCode = "400", description = "Bad request")
         public Mono<String> start(@PathVariable @Parameter(name = "sessionId",
@@ -52,7 +55,8 @@ public class MarketDataController {
         }
 
         @PutMapping("/session/stop/{sessionId}")
-        @Operation(summary = "Stop replay", description = "Stop session streaming.")
+        @Operation(summary = "Stop replay session.",
+                        description = "Stop streaming events from replay session. Current state is saved. Call start to resume streaming from saved state. It is a no-op for stopped sessions.")
         @ApiResponse(responseCode = "200", description = "Successfully stopped")
         @ApiResponse(responseCode = "400", description = "Bad request")
         public Mono<String> stop(@PathVariable @Parameter(name = "sessionId",
@@ -70,7 +74,8 @@ public class MarketDataController {
         }
 
         @PutMapping("/session/rewind/{sessionId}")
-        @Operation(summary = "Rewind session", description = "Rewind session.")
+        @Operation(summary = "Rewind session to beginning.",
+                        description = "Rewind session to beginning. Running replay sessions will resume streaming from beginning.")
         @ApiResponse(responseCode = "200", description = "Successfully rewound")
         @ApiResponse(responseCode = "400", description = "Bad request")
         public Mono<String> rewind(@PathVariable @Parameter(name = "sessionId",
@@ -88,8 +93,8 @@ public class MarketDataController {
         }
 
         @PutMapping("/session/jump/{sessionId}/{eventId}")
-        @Operation(summary = "Jump to session event",
-                        description = "Jump to specific event in session.")
+        @Operation(summary = "Jump to session event.",
+                        description = "Jump to specific event in the replay session. Running sessions will resume streaming from specified event.")
         @ApiResponse(responseCode = "200", description = "Successfully jumped to event")
         @ApiResponse(responseCode = "400", description = "Bad request")
         public Mono<String> jumpToEvent(@PathVariable @Parameter(name = "sessionId",
@@ -111,8 +116,8 @@ public class MarketDataController {
         }
 
         @PutMapping("/session/forward/{sessionId}/{skipCount}")
-        @Operation(summary = "Forward session by number of events",
-                        description = "Forward session by skipping a number of events.")
+        @Operation(summary = "Forward replay session by number of events.",
+                        description = "Jump forward by skipping specified number of events. If number of skip events is greater than remaining events, session will stop (does not wrap around).")
         @ApiResponse(responseCode = "200", description = "Successfully forwarded session")
         @ApiResponse(responseCode = "400", description = "Bad request")
         public Mono<String> forward(@PathVariable @Parameter(name = "sessionId",
@@ -134,7 +139,9 @@ public class MarketDataController {
         }
 
         @PutMapping("/session/speed/{sessionId}/{speed}")
-        @Operation(summary = "Set replay speed", description = "Set replay speed for a session.")
+        @Operation(summary = "Set replay speed.",
+                        description = "Set replay session speed. Default speed is 1.0"
+                                        + " (real-time). Value less than 1.0 will slow down replay. Value greater than 1.0 will speed up replay.")
         @ApiResponse(responseCode = "200", description = "Successfully set replay speed")
         @ApiResponse(responseCode = "400", description = "Bad request")
         public Mono<String> replaySpeed(@PathVariable @Parameter(name = "sessionId",
@@ -155,9 +162,9 @@ public class MarketDataController {
                                                                 e.getMessage())));
         }
 
-        @GetMapping(value = "/session/stream/{sessionId}", produces = "text/event-stream")
-        @Operation(summary = "Subscribe to market data events",
-                        description = "Subscribe to market data events for a session. Call start to start streaming")
+        @GetMapping(value = "/session/subscribe/{sessionId}", produces = "text/event-stream")
+        @Operation(summary = "Subscribe to replay session events.",
+                        description = "Subscribe to replay session events. After subscription, replay session must be started to actually begin streaming.")
         @ApiResponse(responseCode = "200", description = "Successfully subscribed")
         @ApiResponse(responseCode = "400", description = "Bad request")
         public Flux<MarketDataEvent> subscribe(@PathVariable @Parameter(name = "sessionId",
