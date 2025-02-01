@@ -29,7 +29,8 @@ dependencies {
 	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.15.0'
 	implementation 'org.apache.commons:commons-csv:1.13.0'
 	implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.2.0'
-
+	implementation 'com.google.guava:guava:32.1.2-jre'
+	
     implementation 'org.hibernate.validator:hibernate-validator:8.0.0.Final'
     implementation 'jakarta.validation:jakarta.validation-api:3.0.0'
 
