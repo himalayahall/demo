@@ -48,8 +48,8 @@ replayClockMillis is set to the timestamp of first data event. At each publishin
 and replayClockMillis advances, depending on the *replaySpeed* (see below).
 
   - replaySpeed -> controls how rapidly the replay clock advances. For example, suppose  publishTimerMillis = 10 , and replaySpeed = 1.0. Then at each publishing cycle
-     replayClockMillis will advance by 10 (publishTimerMillis * replaySpeed). Now, suppose  replaySpeed is bumped up to 2.0. At the next publishing cycle, replayClockMillis 
-will advance by 20 ms although 10 ms have passed (publishTimerMillis = 10). This works both for speeding up and slowing down replay. 
+     replayClockMillis will advance by 10 ms (publishTimerMillis * replaySpeed). Now, suppose  replaySpeed is bumped up to 2.0. At the next publishing cycle, replayClockMillis 
+will advance by 20 ms, even though only 10 ms have passed on the system clock (publishTimerMillis = 10). This works both for speeding up (> 1.0) and slowing down (< 1.0) replay. 
 
 ## Main Artifacts
 - MarketDataController -> entry point for the REST API
