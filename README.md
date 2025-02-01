@@ -43,7 +43,7 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 - Sliding window -> virtual sliding window moves over cached events, during each publishing cycle ALL events under sliding window are published.
 - Two settings control the sliding window and event publication
   - publishTimerMillis ->  controls how often the sliding window is moved. Default: 10 ms, configurable via **application.properties**.
-  - replayClockMillis -> far time has progressed in a replay session. It effectively controls the sliding window size. When session is created or rewound
+  - replayClockMillis -> how far time has progressed in a replay session. It effectively controls the sliding window size. When session is created or rewound
 replayClockMillis is set to the timestamp of first data event. At each publishing cycle all *unpublished* events with timestamp <= replayClockMillis are published,
 and replayClockMillis advances, depending on the *replaySpeed* (see below).
 
