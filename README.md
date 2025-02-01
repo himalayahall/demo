@@ -60,6 +60,10 @@ will advance by 20 ms, even though only 10 ms have passed on the system clock (p
   - JacksonCSVReader -> Jackson implementation
   - ApacheCSVReaderService -> Apache Commons implementation. Tried this first but was not clean code (deprecated API, dealing with BOM was cumbersome)
 
+## Test
+
+- Unit tests are used to test basic functionality replay service.
+
 ## Running
 
 - Clone project, load in VSCode (or your favorite IDE), launch application
