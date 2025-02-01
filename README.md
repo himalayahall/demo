@@ -2,7 +2,7 @@
 
 ## Tech Stack
 
-- Java, Spring Boot, Spring WebFlux, Gradle, VS Code
+- Java, Spring Boot, Spring WebFlux, Google Guava (cache), Gradle, VS Code
 
 ## Assumptions
 
