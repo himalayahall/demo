@@ -11,6 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.lang3.time.DurationFormatUtils;
+
 @Slf4j
 public class ReplaySessionImpl implements ReplaySession {
 
@@ -51,6 +53,7 @@ public class ReplaySessionImpl implements ReplaySession {
     public void start() {
         log.info("start session: {}", sessionId);
 
+        long startMillis = System.currentTimeMillis();
         isRunning.set(true);
         Flux.interval(Duration.ofMillis(publishTimerMillis), Schedulers.boundedElastic())
                 .takeWhile(tick -> isRunning.get() && currentIndex.get() < events.size())
@@ -70,6 +73,14 @@ public class ReplaySessionImpl implements ReplaySession {
 
                     // Advance the simulation clock based on the publishing speed
                     replayClockMillis += (replaySpeed.get() * publishTimerMillis);
+
+                    if (currentIndex.get() >= events.size()) {
+                        long endMillis = System.currentTimeMillis();
+                        String fmtDuration = DurationFormatUtils.formatDuration(
+                                Duration.ofMillis(endMillis - startMillis).toMillis(), "H:mm:ss:SSS");
+                        log.info("Session: {}, started: {}, end: {}, duration: {}", sessionId,
+                                new Date(startMillis), new Date(endMillis), fmtDuration);
+                    }
                 });
     }
 

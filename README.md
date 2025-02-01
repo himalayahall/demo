@@ -42,7 +42,7 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 - Data -> read from [CSV file](https://github.com/himalayahall/demo/blob/9f346eac082b2ba9300041759bce3413532ba7fa/src/main/resources/marketdata-for-coding-challenge.csv). FYI - The file had invisible BOM which caused a lot of head scratching before I pinpointed the cause and fixed it (see below)
 - Sliding window -> virtual sliding window moves over cached events, during each publishing cycle ALL events under sliding window are published.
 - Two settings control the sliding window and event publication
-  - publishTimerMillis ->  controls how often the sliding window is moved. Default: 10 ms, configurable via **application.properties**.
+  - publishTimerMillis ->  controls how often the sliding window is moved. Default: 1 millisecond, configurable via **application.properties**.
   - replayClockMillis -> how far time has progressed in a replay session. It effectively controls the sliding window size. When session is created or rewound
 replayClockMillis is set to the timestamp of first data event. At each publishing cycle all *unpublished* events with timestamp <= replayClockMillis are published,
 and replayClockMillis advances, depending on the *replaySpeed* (see below).
@@ -77,3 +77,7 @@ the streaming of market data events is not rendered on the browser. For that, yo
 
   2. Use Curl to access the API. For example, `curl -X GET http://localhost:8080/session/subscribe/e8cc93be-3723-4c37-8681-b3fa6d3b7a79` to subscribe for events on session 
 `e8cc93be-3723-4c37-8681-b3fa6d3b7a79`.
+
+### Testing Recipe
+
+  1. 

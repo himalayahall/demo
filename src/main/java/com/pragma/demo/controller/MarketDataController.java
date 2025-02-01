@@ -37,7 +37,7 @@ public class MarketDataController {
 
         @PutMapping("/session/start/{sessionId}")
         @Operation(summary = "Start replay session.",
-                        description = "Start streaming events from replay session. A stopped replay session will start from previous saved state. It is a no-op for running sessions.")
+                        description = "Start streaming events from replay session. A stopped replay session will start from previous saved state. Once a session has published all events it is stopped. It is a no-op for running sessions.")
         @ApiResponse(responseCode = "200", description = "Successfully started")
         @ApiResponse(responseCode = "400", description = "Bad request")
         public Mono<String> start(@PathVariable @Parameter(name = "sessionId",
