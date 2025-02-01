@@ -16,10 +16,11 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 @Slf4j
 public class ReplaySessionImpl implements ReplaySession {
 
+    private final String sessionId;
     private final Date created = new Date(); // session creation timestamp
     private final long publishTimerMillis; // determines how often events are published
-    private final String sessionId;
-    private double replayClockMillis;
+    private double replayClockMillis; // double because we need to multiply by replaySpeed and allow
+                                      // clock to in sub-millisec increments
 
     // Event stream
     private final List<MarketDataEvent> events;
@@ -77,7 +78,8 @@ public class ReplaySessionImpl implements ReplaySession {
                     if (currentIndex.get() >= events.size()) {
                         long endMillis = System.currentTimeMillis();
                         String fmtDuration = DurationFormatUtils.formatDuration(
-                                Duration.ofMillis(endMillis - startMillis).toMillis(), "H:mm:ss:SSS");
+                                Duration.ofMillis(endMillis - startMillis).toMillis(),
+                                "H:mm:ss:SSS");
                         log.info("Session: {}, started: {}, end: {}, duration: {}", sessionId,
                                 new Date(startMillis), new Date(endMillis), fmtDuration);
                     }
