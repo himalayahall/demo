@@ -66,10 +66,10 @@ will advance by 20 ms, even though only 10 ms have passed on the system clock (p
 
 ## API
 - Documentation is [here](https://github.com/himalayahall/demo/blob/5bbd1c5971250a09ce0872e3b4562cf2fa36e17a/api-documentation.pdf)
-- Below are 2 ways of headless interaction with this service:
+- Below are 2 ways of using this service:
 
-  1. Spring OpenAPI browser interface is baked in. Navigate to http://localhost:8080/swagger-ui.html on your browser. All controls work through the OpenAPI interface, **except** 
-the streaming of market data events is not rendered on the browser.
+  1. Spring OpenAPI browser interface is baked in. Start the service and use the Open API at http://localhost:8080/swagger-ui.html. All controls work fine through the OpenAPI interface, **except** 
+the streaming of market data events is not rendered on the browser. For that, you can use *Curl*.
 
-  3. Use CURL to access the API. For example, *curl -X GET http://localhost:8080/mktdata/session/stream/e8cc93be-3723-4c37-8681-b3fa6d3b7a79* to subscribe for events on session 
-e8cc93be-3723-4c37-8681-b3fa6d3b7a79.
+  2. Use Curl to access the API. For example, `curl -X GET http://localhost:8080/session/subscribe/e8cc93be-3723-4c37-8681-b3fa6d3b7a79` to subscribe for events on session 
+`e8cc93be-3723-4c37-8681-b3fa6d3b7a79`.
