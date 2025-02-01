@@ -40,23 +40,25 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 
 - Reactive Spring Flux application, REST API for replay controls
 - Data -> read from CSV file. FYI - The file had invisible BOM which caused a lot of head scratching before I pinpointed the cause and fixed it (see below)
-- Sliding window -> an virtual sliding window moves over  cached events, and during each publishing cycle ALL events under the sliding window get published.
+- Sliding window -> virtual sliding window moves over cached events, during each publishing cycle ALL events under sliding window are published.
 - Two settings control the sliding window and event publication
-  - publishTimerMillis ->  controls how often the sliding window is moved and events are published. Default: 10 ms, configurable via **application.properties**.
-  - replayClockMillis -> it is how far time has progressed in a replay session. It effectively controls the sliding window size. When session is created or rewound
-this is set to the timestamp of the first data event. At each publishing cycle all *unpublished* events with timestamd <= replayClockMillis will be published.
+  - publishTimerMillis ->  controls how often the sliding window is moved. Default: 10 ms, configurable via **application.properties**.
+  - replayClockMillis -> far time has progressed in a replay session. It effectively controls the sliding window size. When session is created or rewound
+replayClockMillis is set to the timestamp of first data event. At each publishing cycle all *unpublished* events with timestamp <= replayClockMillis are published,
+and replayClockMillis advances, depending on the *replaySpeed* (see below).
+
   - replaySpeed -> controls how rapidly the replay clock advances. For example, suppose  publishTimerMillis = 10 , and replaySpeed = 1.0. Then at each publishing cycle
      replayClockMillis will advance by 10 (publishTimerMillis * replaySpeed). Now, suppose  replaySpeed is bumped up to 2.0. At the next publishing cycle, replayClockMillis 
 will advance by 20 ms although 10 ms have passed (publishTimerMillis = 10). This works both for speeding up and slowing down replay. 
 
 ## Main Artifacts
-- MarketDataController - entry point for the REST API
-- ReplayService - provides services for managing the lifecycle of sessions (create, start, stop, rewind, etc.)
-- ReplaySession - replace session
-- MarketDataEvent - record with data from the market data CSV file
-- CSVReaderService - CSV reader service interface
-  -- JacksonCSVReader - Jackson implementation
-  -- ApacheCSVReaderService - Apache Commons implementation. Tried this first but was not clean code (deprecated API, dealing with BOM was cumbersome)
+- MarketDataController -> entry point for the REST API
+- ReplayService -> provides services for managing the lifecycle of sessions (create, start, stop, rewind, etc.)
+- ReplaySession -> replace session
+- MarketDataEvent -> record with data from the market data CSV file
+- CSVReaderService -> CSV reader service interface
+  - JacksonCSVReader -> Jackson implementation
+  - ApacheCSVReaderService -> Apache Commons implementation. Tried this first but was not clean code (deprecated API, dealing with BOM was cumbersome)
 
 ## Running
 
