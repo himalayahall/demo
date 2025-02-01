@@ -67,7 +67,7 @@ and replayClockMillis advances in increment of (replaySpeed $\times$ publishTime
 - Make sure you have Java (17 or higher) installed on your machine
 - Clone project
 
-### Running {#running-id}
+### Running {#running-section}
 
 - Load project in VSCode (or your favorite IDE), open terminal in VSCode (to view service logs), run application from VSCode
 
@@ -86,7 +86,7 @@ the streaming of market data events is not rendered on the browser. For that, yo
 
 ## Does it work as expected? A recipe for kicking the tires
 
-  1. [Start replay service](#running-id)
+  1. [Start replay service](#running-section)
   2. Go to http://localhost:8080/swagger-ui.html.
   3. Click **`POST /mktdata/session`**.
   4. Click **`Try it out`**.
