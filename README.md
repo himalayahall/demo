@@ -80,4 +80,19 @@ the streaming of market data events is not rendered on the browser. For that, yo
 
 ### Testing Recipe
 
-  1. 
+  1. Start replay service
+  2. Go to http://localhost:8080/swagger-ui.html.
+  3. Click `POST /mktdata/session`.
+  4. Click `Try it out`.
+  5. Click `Execute`. A new session will be created. Copy the session ID from the `Respose body`.
+  6. Click `PUT /mktdata/session/start/{sessionId}`.
+  7. Click `Try it out`.
+  8. Paste session ID into textbox.
+  9. Click `Execute`. This will start replay session. Service logs for published events will be visible in the terminal window. When replay finishes a summary will be logged
+      with the start time, end time, and duration of the replay session. This is a good baseline as it shows the time taken to replay the full dataset at *normal* speed and
+ should be approximately equal to the recording duration.
+  10. Now for the fun part. Click `/mktdata/session/rewind/{sessionId}`, click `Try it out`, paste session ID into `Session Id` textbox, click `Execute`.
+  11. Click `/mktdata/session/speed/{sessionId}/{speed}`, click `Try it out`, paste session ID into `Session Id` textbox, enter 2.0 in `speed` textbox. Click `Execute`.
+  12. When this replay session finishes take a look service log tail. The replay duration should be approximately *half* the previous run since we just replay at *twice* the speed.
+  13. Rewind session again (see step 10). Now make the replay speed (see step 11) very large, e.g. `10000.0`. Start the replay session (see steps 6-9). When this replay session finishes take a look service log tail. The replay duration will be a very small number (milliseconds). This demonstrates that the replay service is capabnle of publishing events at a high rate (1000 of events per second).
+
