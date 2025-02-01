@@ -16,8 +16,8 @@ public class ReplaySessionImpl implements ReplaySession {
 
     private final Date created = new Date(); // session creation timestamp
     private final long publishTimerMillis; // determines how often events are published
-    private long replayClockMillis; // determines how many events are published
     private final String sessionId;
+    private long replayClockMillis; // determines how many events are published
 
     // Event stream
     private final List<MarketDataEvent> events;
@@ -140,6 +140,14 @@ public class ReplaySessionImpl implements ReplaySession {
     @Override
     public Date created() {
         return created;
+    }
+
+    public Double getReplaySpeed() {
+        return replaySpeed.get();
+    }
+
+    public int getCurrentIndex() {
+        return currentIndex.get();
     }
 
     @Override
