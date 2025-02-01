@@ -131,6 +131,13 @@ public class ReplayService {
         }
     }
 
+    public void forward(String sessionId, int skipCount) {
+        Optional<ReplaySession> session = Optional.ofNullable(cache.getIfPresent(sessionId));
+        if (session.isPresent()) {
+            session.get().forward(skipCount);
+        }
+    }
+
     /**
      * Set replay speed.
      * 

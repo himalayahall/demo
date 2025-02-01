@@ -56,8 +56,8 @@ public class ReplaySessionImpl implements ReplaySession {
                 .takeWhile(tick -> isRunning.get() && currentIndex.get() < events.size())
                 .subscribe(tick -> {
                     // Publish all events with timestamp <= simulationClockMillis
-                    while (currentIndex.get() < events.size() && events.get(currentIndex.get())
-                            .timestamp() <= replayClockMillis) {
+                    while (currentIndex.get() < events.size()
+                            && events.get(currentIndex.get()).timestamp() <= replayClockMillis) {
                         MarketDataEvent event = events.get(currentIndex.getAndIncrement());
                         log.info("replay event: {} on session: {}", event, sessionId);
                         Sinks.EmitResult result = eventSink.tryEmitNext(event);
@@ -86,7 +86,7 @@ public class ReplaySessionImpl implements ReplaySession {
         currentIndex.set(0);
         if (!events.isEmpty())
             this.replayClockMillis = events.get(0).timestamp(); // Reset clock to the first
-                                                                    // event's
+                                                                // event's
         // timestamp
         else
             this.replayClockMillis = 0;
@@ -97,14 +97,27 @@ public class ReplaySessionImpl implements ReplaySession {
         log.info("jump to eventId: {}, session: {}", eventId, sessionId);
         for (int i = 0; i < events.size(); i++) {
             if (events.get(i).id() == eventId) {
-                currentIndex.set(i);
-                replayClockMillis = events.get(i).timestamp(); // Set clock to the timestamp of
-                                                                   // the
-                // target event
+                jumpToEventByIndex(i);
                 return;
             }
         }
         throw new ReplayException(String.format("Invalid event ID:: {}", eventId));
+    }
+
+    private void jumpToEventByIndex(int index) {
+        currentIndex.set(index);
+        if (index < events.size())
+            replayClockMillis = events.get(index).timestamp();
+    }
+
+    @Override
+    public void forward(int skipCount) {
+        log.info("forward: {}, session: {}", skipCount, sessionId);
+        int targetIndex = currentIndex.get() + skipCount;
+        if (targetIndex >= events.size()) {
+            log.warn("forward: {}, session: {} - reached end of events", skipCount, sessionId);
+        }
+        jumpToEventByIndex(targetIndex);
     }
 
     @Override

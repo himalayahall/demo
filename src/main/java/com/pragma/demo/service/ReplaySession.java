@@ -39,6 +39,13 @@ public interface ReplaySession {
     void jumpToEvent(int eventId);
 
     /**
+     * Forward session by numEvents.
+     * 
+     * @param numEvents Number of events to forward.
+     */
+    void forward(int numEvents);
+
+    /**
      * Subscribe to session event stream.
      * 
      * @return Session event flux.
