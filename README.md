@@ -131,17 +131,17 @@ the streaming of market data events is not rendered on the browser. For that, yo
 As above tests demonstrate, this replay server satisfies all [Functional](#Functional) and [Non-Functional](#Non-Functional) requirements. In particular, the replay service is capable of publishing events at a high rate (3452 events published in sub-second). Below are performance test results on Apple Macbook with 1.4 GHz Quad-Core Intel Core i5 with 16GB 2133 MHz RAM. 
 Clients and server were running on same machine. 
 
-Note, baseline is a 1 client running at speed = 1.0 - it takes almost 2 minutes to complete (there is about 2 minutes worth of data. Now 
-look at the case where 10 clients are running at speed = 1000, basically the server is blasting events as fast as it can. Clearly, the server performas very well. Even with 100 clients running
-at speed = 1000 the server performs well.
+Note, baseline is a 1 client running at speed = 1.0 - it takes almost 2 minutes to complete (there is about 2 minutes worth of data. Now look at the case where 100 clients are running at speed = 1, it takes the same time as the baseline; no performance impact on server with additional clients! 
 
-| # Sessions | Replay Speed | Duration    |
-|------------|--------------|-------------|
-| 1          | 1            | 0:01:58:195 |
-| 10         | 1000         | 0:00:02:402 |
-| 100        | 2            | 0:00:59:663 |
-| 100        | 10           | 0:00:28:414 |
-| 100        | 1000         | 0:00:25:097 |
+| # Sessions | Replay Speed | Duration<br>hh:mm:ss:zzz |
+|------------|--------------|--------------|
+| 1          | 1            | 00:01:58:195 |
+| 10         | 1            | 00:01:58:212 |
+| 100        | 1            | 00:01:59:345 |
+| 10         | 1000         | 00:00:02:402 |
+| 100        | 2            |0 0:00:59:663 |
+| 100        | 10           | 00:00:28:414 |
+| 100        | 1000         | 00:00:25:097 |
 
 Performance could be further increased through horizontal scaling - simply launch additional replay server processes with a Load Balancer, using sticky connections, and distribute clients among these servers. Other optimizations may be to use a wire encoding like Google Proto to cut down network bandwidth and large datasets could be cached in a distributed cache like Redis. 
 
