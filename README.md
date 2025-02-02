@@ -106,7 +106,9 @@ the streaming of market data events is not rendered on the browser. For that, yo
   2. Use Curl to access the API. For example, `curl -X GET http://localhost:8080/session/subscribe/e8cc93be-3723-4c37-8681-b3fa6d3b7a79` to subscribe for events on session 
 `e8cc93be-3723-4c37-8681-b3fa6d3b7a79`.
 
-## Does it work as expected? A recipe for kicking the tires
+## Does it work as expected? 
+
+## Manual recipe for kicking the tires
 
   1. [Start replay service](#running)
   2. Go to http://localhost:8080/swagger-ui.html.
@@ -125,23 +127,29 @@ the streaming of market data events is not rendered on the browser. For that, yo
   11. Now double the replay speeed: click `/mktdata/session/speed/{sessionId}/{speed}`, click `Try it out`, paste session ID into `Session Id` textbox, enter 2.0 in `speed` textbox. Click `Execute`. Replay speed has been doubled.
   12. Restart the session (repeat [step 6-9](#step-6)), events will  be streamed at the new replay speed. When this replay session finishes take a look at the service log tail. Replay **duration** should be approximately *half* the previous replay session since the stream was replayed at *twice* the normal speed.
   13. One more test to get a sense of the raw performance of replay server. Rewind session again (see [step 10](#step-10)). Now make the replay speed (see [step 11](#step-11)) very large, e.g. `10000.0`. Start the replay session (see [step 6-9](#step-6)). When this replay session finishes take a look the service log tail. Replay duration will be a very small number (milliseconds).
-      
+
+## Automation recipe for kicking the tires
+
+Manual testing is fine but cumbersome if onme wants to run a lot of experiments. For example, it would be great to easily test streaming to hundreds of concurrent clients. This is not easy to do manually. A great way to accomplish this is through [Jupyter Notebooks](https://jupyter.org). A notebook was used to gather performance metrics.
+
 ### Conclusion
 
-As above tests demonstrate, this replay server satisfies all [Functional](#Functional) and [Non-Functional](#Non-Functional) requirements. In particular, the replay service is capable of publishing events at a high rate (3452 events published in sub-second). Below are performance test results on Apple Macbook with 1.4 GHz Quad-Core Intel Core i5 with 16GB 2133 MHz RAM. 
-Clients and server were running on same machine. 
+As above tests demonstrate, this replay server satisfies all [Functional](#Functional) and [Non-Functional](#Non-Functional) requirements. 
 
-Note, baseline is a 1 client running at speed = 1.0 - it takes almost 2 minutes to complete (there is about 2 minutes worth of data. Now look at the case where 100 clients are running at speed = 1, it takes the same time as the baseline; no performance impact on server with additional clients! 
+Below are performance test results on Apple Macbook with 1.4 GHz Quad-Core Intel Core i5 with 16GB 2133 MHz RAM. Java runtime was Amazon Corretto 17, Heap Size (-Xmx and -Xms): 4096 MB. Client and server processes were on same machine. 
+
+Note, baseline is a single client running at speed = 1.0 - it takes roughly 2 minutes to publish all data events. Looking at 100 and 1000 clients running at speed = 1, there is no performance impact on server. As publishing speed was increased there was some impact on performance but it was still well within acceptable thresholds - blasting 3452 events to 1000
+clients (3.4M total events) at speed = 5000 took 7.9 seconds, which is roughly 431,500 events/sec. Time was measured at the client - a Web based Jupyter Notenbook that 
 
 | # Sessions | Replay Speed | Duration<br>hh:mm:ss:zzz |
 |------------|--------------|--------------|
 | 1          | 1            | 00:01:58:195 |
-| 10         | 1            | 00:01:58:212 |
-| 100        | 1            | 00:01:59:345 |
-| 10         | 1000         | 00:00:02:402 |
-| 100        | 2            |0 0:00:59:663 |
-| 100        | 10           | 00:00:28:414 |
-| 100        | 1000         | 00:00:25:097 |
+| 10         | 1            | 00:01:56:313 |
+| 1000       | 1            | 00:01:58:195 |
+|------------|--------------|--------------|
+| 1          | 5000         | 00:00:00:025 |
+| 10         | 5000         | 00:00:00:800 |
+| 1000       | 5000         | 00:00:07:900 |
 
 Performance could be further increased through horizontal scaling - simply launch additional replay server processes with a Load Balancer, using sticky connections, and distribute clients among these servers. Other optimizations may be to use a wire encoding like Google Proto to cut down network bandwidth and large datasets could be cached in a distributed cache like Redis. 
 
