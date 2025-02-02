@@ -65,8 +65,10 @@ public class ReplaySessionImpl implements ReplaySession {
                     // Publish all events with timestamp <= simulationClockMillis
                     while (currentIndex.get() < events.size()
                             && events.get(currentIndex.get()).timestamp() <= replayClockMillis) {
+                        
                         MarketDataEvent event = events.get(currentIndex.getAndIncrement());
-                        log.info("replay event: {} on session: {}", event, sessionId);
+                        if (log.isDebugEnabled())
+                            log.debug("replay event: {} on session: {}", event, sessionId);
                         Sinks.EmitResult result = eventSink.tryEmitNext(event);
                         if (result.isFailure()) {
                             log.error("Failed to emit event: {}, session: {}, result: {}", event,
@@ -79,6 +81,8 @@ public class ReplaySessionImpl implements ReplaySession {
                     replayClockMillis += (replaySpeed.get() * publishTimerMillis);
 
                     if (currentIndex.get() >= events.size()) {
+                        eventSink.tryEmitComplete();
+                        
                         long endMillis = System.currentTimeMillis();
                         String fmtDuration = DurationFormatUtils.formatDuration(
                                 Duration.ofMillis(endMillis - startMillis).toMillis(),
