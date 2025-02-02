@@ -2,6 +2,7 @@ package com.pragma.demo.service;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import java.time.Duration;
 import java.util.Date;
@@ -16,6 +17,8 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 @Slf4j
 public class ReplaySessionImpl implements ReplaySession {
 
+    private final Scheduler SCHEDULER = Schedulers.boundedElastic();
+
     private final String sessionId;
     private final Date created = new Date(); // session creation timestamp
     private final long publishTimerMillis; // determines how often events are published
@@ -29,7 +32,7 @@ public class ReplaySessionImpl implements ReplaySession {
     private final AtomicInteger currentIndex = new AtomicInteger(0);
 
     // Is session in running state. Stopped session does not publish events
-    private volatile AtomicBoolean isRunning = new AtomicBoolean(false);
+    private AtomicBoolean isRunning = new AtomicBoolean(false);
 
 
     // Replay speed. Speed: 1.0 => normal speed, 2.0 => double normal speed, 0.5 => half normal
@@ -56,7 +59,7 @@ public class ReplaySessionImpl implements ReplaySession {
 
         long startMillis = System.currentTimeMillis();
         isRunning.set(true);
-        Flux.interval(Duration.ofMillis(publishTimerMillis), Schedulers.boundedElastic())
+        Flux.interval(Duration.ofMillis(publishTimerMillis), SCHEDULER)
                 .takeWhile(tick -> isRunning.get() && currentIndex.get() < events.size())
                 .subscribe(tick -> {
                     // Publish all events with timestamp <= simulationClockMillis
