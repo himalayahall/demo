@@ -102,13 +102,13 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 - `Unit tests` are used to test  functionality of the replay service including Start, Stop, Set Replay Speed, Rewind (Reset), Forward, Jump to Event. `Mocks` are used for markeyt data events.
 <!---->
 ## Replay service installation
-  - Prerequisites - Java (17 or higher), Java IDE (VSCode, IntelliJ, Eclipse).
+  - Prerequisites - Java (17 or higher), IDE (VSCode, IntelliJ, Eclipse).
   - Clone project.
 <!---->
 ### Running
 
 - Load project in VSCode (or another IDE).
-- Open terminal inside VSCode for view replay service logs.
+- Open terminal inside VSCode for viewing replay service logs.
 - Run application from VSCode.
 - On successful launch below logs will be rendered.
 -----
