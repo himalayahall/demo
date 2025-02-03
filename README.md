@@ -130,14 +130,14 @@ the streaming of market data events is not rendered on the browser. For that, yo
 
 ## Automation recipe for kicking the tires
 
-Manual testing is fine but cumbersome if onme wants to run a lot of experiments. For example, it would be great to easily test streaming to hundreds of concurrent clients. This is not easy to do manually. A great way to accomplish this is through [Jupyter Notebooks](https://jupyter.org). Just such a [notebook](https://github.com/himalayahall/demo/blob/b2bd58cbe2efca0c3c9cd283db43e2765d133fe6/src/main/jupyter/replay.ipynb) was built to gather performance metrics. 
+Manual testing is fine but cumbersome if onme wants to run a lot of experiments. For example, it would be great to easily test streaming to hundreds of concurrent clients. This is not easy to do manually. A great way to accomplish this is through [Jupyter Notebooks](https://jupyter.org). Just such a [notebook](https://github.com/himalayahall/demo/blob/d4a2e8a869642cf92992e7e101fa1f0e69685a53/src/main/jupyter/replay.ipynb) was built to gather performance metrics. 
 
 ## Performance
 
 Below are performance test results on Apple Macbook with 1.4 GHz Quad-Core Intel Core i5 with 16GB 2133 MHz RAM. Java runtime was Amazon Corretto 17, Heap Size (-Xmx and -Xms): 4096 MB. Client and server processes were on same machine. 
 
 Note, baseline is a single client running at speed = 1.0 - it takes roughly 2 minutes to publish all data events. Looking at 100 and 1000 clients running at speed = 1, there is no performance impact on server. As publishing speed was increased there was some impact on performance but it was still well within acceptable thresholds - blasting 3452 events to 1000
-clients (3.4M total events) at speed = 5000 took 7.9 seconds, which is roughly 431,500 events/sec. Times were measured at Web based Jupyter [notebook](https://github.com/himalayahall/demo/blob/b2bd58cbe2efca0c3c9cd283db43e2765d133fe6/src/main/jupyter/replay.ipynb).
+clients (3.4M total events) at speed = 5000 took 7.9 seconds, which is roughly 431,500 events/sec. Times were measured at Web based Jupyter [notebook](https://github.com/himalayahall/demo/blob/d4a2e8a869642cf92992e7e101fa1f0e69685a53/src/main/jupyter/replay.ipynb).
 
 | # Sessions | Replay Speed | Duration<br>hh:mm:ss:zzz |
 |------------|--------------|--------------|
