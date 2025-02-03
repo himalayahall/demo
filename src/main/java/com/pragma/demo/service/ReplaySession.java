@@ -65,4 +65,17 @@ public interface ReplaySession {
      * @return
      */
     String sessionId();
+
+    /**
+     * Check if session is running. Stopped session can be restarted.
+     * @return True if session is running, false otherwise.
+     */
+    boolean isRunning();
+
+    /**
+     * Check if session is terminated. Session are terminated once they reach end of market data stream.
+     * Terminated session cannot be restarted.
+     * @return  True if session is terminated, false otherwise.
+     */
+    boolean isTerminated();
 }

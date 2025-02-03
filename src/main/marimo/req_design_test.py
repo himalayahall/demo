@@ -97,16 +97,15 @@ def _(mo):
         - **Spring Boot application** with **RESTful APIs** for replay controls.
         - **Reactive SpringFlux** application for streaming market data events. 
         - **Data** -> read from [CSV file](https://github.com/himalayahall/demo/blob/9f346eac082b2ba9300041759bce3413532ba7fa/src/main/resources/marketdata-for-coding-challenge.csv). FYI - file had invisible BOM which caused a lot of head scratching before I pinpointed the cause and fixed it (see below).
-        - **Session cache** - sessions are stored in Google Guava cache, **stale** sessions are ejected after a configurable timeout.
-        - **Sliding window** -> virtual sliding window moves over cached events, during each publishing cycle ALL events under sliding window are published.
-        - Two settings control the sliding window and event publication
-            - **publishTimerMillis** ->  controls how often the sliding window is moved. Default: 1 millisecond, configurable via *application.properties*.
-            - **replayClockMillis** -> tracks how far time has progressed in a replay session. It effectively controls the sliding window size. It is initialized to the timestamp of first data event. At each publishing cycle all *unpublished* events with $timestamp \leq replayClockMillis$ are published,
-        and replayClockMillis advances in increment of $replaySpeed \times publishTimerMillis$ .
+        - **Session cache** - sessions are stored in Google Guava cache, **stale** sessions are ejected after a configurable timeout in `application.properties`. Default cache cofiguration is `1 HOUR`.
+        - **Sliding window** -> virtual sliding window moves over cached events, during each publishing cycle ALL events under sliding window are published. Sliding window and event publication controls are set through `application.properties`:
 
-          - **replaySpeed** -> controls how fast the replay clock advances. For example, suppose  $publishTimerMillis =  1$ and $replaySpeed = 1.0$. During each publishing cycle (at 1 ms intervals) replayClockMillis will advance by 1 ms (publishTimerMillis * replaySpeed).
+            - **publishTimerMillis** ->  controls how often the sliding window is moved, default: `1 millisecond`.
+            - **replayClockMillis** -> tracks how far time has progressed in a replay session. Controls the sliding window size. When a sessikon is `created` or `rewound` the session `replayClockMillis` is initialized to timestamp of the first data event. At each publishing cycle all `unpublished` events with $timestamp \leq replayClockMillis$ are published and then `replayClockMillis` is set to $replayClockMillis + (replaySpeed \times publishTimerMillis$).
 
-            Suppose replaySpeed is bumped up to 2.0. During the following publishing cycle replayClockMillis will advance by 2 ms, even though  1 ms has passed on the system clock ($publishTimerMillis = 1$). This works both for speeding up ($replaySpeed \gt 1.0$) and slowing down ($replaySpeed \lt 1.0)$ replay.
+          - **replaySpeed** -> controls how fast the replay clock advances. For example, suppose  $publishTimerMillis =  1$ and $replaySpeed = 1.0$. During each publishing cycle `replayClockMillis` will advance by $replaySpeed \times publishTimerMillis$.
+
+            Suppose `replaySpeed` is bumped up to `2.0`. During next publishing cycle `replayClockMillis` will advance by `2 milliseconds`, even though `1 millisecond` has passed on the system clock ($publishTimerMillis = 1$). This works both for speeding up ($replaySpeed \gt 1.0$) and slowing down ($replaySpeed \lt 1.0)$ replay.
         """
     )
     return
@@ -116,15 +115,15 @@ def _(mo):
 def _(mo):
     mo.md(
         r"""
-        ## Key Classes
+        ## Key classes
         - **MarketDataController** - entry point for the REST API.
-        - **ReplayService** - services for managing the lifecycle of sessions.
-        - **ReplaySession** - interface session state machine, handles commands (stop, start, etc.).
-            - **ReplaySessionImpl** - default implementation of ReplaySession
-        - **MarketDataEvent** - record (model) with data from the market data CSV file.
+        - **ReplayService** - services for managing session lifecycles.
+        - **ReplaySession** - interface with methods for session commands (stop, start, etc.)
+            - **ReplaySessionImpl** - default implementation of ReplaySession.
+        - **MarketDataEvent** - market data record (data model).
         - **CSVReaderService** - CSV reader service interface
               - **JacksonCSVReader** - Jackson implementation (default).
-              - **ApacheCSVReaderService** - Apache Commons implementation. Tried this first but was not clean code (deprecated API, dealing with BOM was cumbersome).
+              - **ApacheCSVReaderService** - Apache Commons implementation. Tried this first but the API was *messy* (deprecated API, dealing with BOM was cumbersome).
         """
     )
     return
@@ -136,7 +135,7 @@ def _(mo):
         r"""
         ## Unit Testing
 
-        - Unit tests are used to test basic functionality of the replay service including Start, Stop, Set Replay Speed, Rewind (Reset), Forward, Jump to Event.
+        - `Unit tests` are used to test  functionality of the replay service including Start, Stop, Set Replay Speed, Rewind (Reset), Forward, Jump to Event. `Mocks` are used for markeyt data events.
         """
     )
     return
@@ -146,7 +145,7 @@ def _(mo):
 def _(mo):
     mo.md(
         r"""
-        ## Installation
+        ## Replay service installation
           - Prerequisites - Java (17 or higher), Java IDE (VSCode, IntelliJ, Eclipse).
           - Clone project.
         """
@@ -161,7 +160,7 @@ def _(mo):
         ### Running
 
         - Load project in VSCode (or another IDE).
-        - Open terminal inside VSCode (to view replay service logs).
+        - Open terminal inside VSCode for view replay service logs.
         - Run application from VSCode.
         - On successful launch below logs will be rendered.
         -----
@@ -187,12 +186,6 @@ def _(mo):
 
 @app.cell
 def _(mo):
-    mo.md(r""" """)
-    return
-
-
-@app.cell
-def _(mo):
     mo.md(
         r"""
         ## RESTful API 
@@ -212,9 +205,9 @@ def _(mo):
 
         RESTful API can be used in the usual ways. Below are 2 no-code ways of using tthe API:
 
-          1. **Spring OpenAPI** browser interface is baked into the application. To use this interface - run the application and use the Open API bu opening http://localhost:8080/swagger-ui.html in a browser.
+          1. **Spring OpenAPI**  interface is baked into the application. To use this interface - [run the application](#running) and then go to http://localhost:8080/swagger-ui.html.
 
-          2. Use [Curl](https://curl.se) to access the API. For example, execute `curl -X GET http://localhost:8080/session/subscribe/e8cc93be-3723-4c37-8681-b3fa6d3b7a79` from a terminal to subscribe for events on session 
+          2. Use [curl](https://curl.se) to access the API. For example, execute `curl -X GET http://localhost:8080/session/subscribe/e8cc93be-3723-4c37-8681-b3fa6d3b7a79` from a terminal to subscribe for events on session 
         `e8cc93be-3723-4c37-8681-b3fa6d3b7a79`.
         """
     )
@@ -231,23 +224,53 @@ def _(mo):
 
         ### Manual recipe for kicking the tires
 
-          1. Start replay service (see **Installation**).
-          2. Go to http://localhost:8080/swagger-ui.html.
-          3. Click **`POST /mktdata/session`**.
-          4. Click **`Try it out`**.
-          5. Click **`Execute`**. A new session will be created. Copy the session ID from the **`Response body`**.
-        <a id="step-6"></a> 
-          6. Click `PUT /mktdata/session/start/{sessionId}`.
-          7. Click `Try it out`.
-          8. Paste session ID into `Session Id` textbox.
-          9. Click `Execute`. This will start replay session. Service logs for published events will be visible in the terminal window. When replay finishes a summary will be logged
-              with the start time, end time, and duration of the replay session. This baseline shows the time taken to replay the full dataset at *normal* speed, it should be approximately equal to the recording duration.
-        <a id="step-10"></a> 
-          10. Now for the fun part! Click `/mktdata/session/rewind/{sessionId}`, click `Try it out`, paste session ID into `Session Id` textbox, click `Execute`. The session has been rewound.
-        <a id="step-11"></a>
-          11. Now double the replay speeed: click `/mktdata/session/speed/{sessionId}/{speed}`, click `Try it out`, paste session ID into `Session Id` textbox, enter 2.0 in `speed` textbox. Click `Execute`. Replay speed has been doubled.
-          12. Restart the session (repeat [step 6-9](#step-6)), events will  be streamed at the new replay speed. When this replay session finishes take a look at the service log tail. Replay **duration** should be approximately *half* the previous replay session since the stream was replayed at *twice* the normal speed.
-          13. One more test to get a sense of the raw performance of replay server. Rewind session again (see [step 10](#step-10)). Now make the replay speed (see [step 11](#step-11)) very large, e.g. `10000.0`. Start the replay session (see [step 6-9](#step-6)). When this replay session finishes take a look the service log tail. Replay duration will be a very small number (milliseconds).
+          1. Enable logging
+
+             > - In *application.properties*, locate `logging.level.com.pragma.demo=INFO` and replace it with `logging.level.com.pragma.demo=TRACE`. This will enable TRACE level logging which will be come in handy for manual testing.
+
+          3. [Start replay service](#installation).
+          4. Go to http://localhost:8080/swagger-ui.html.
+
+        <a id="create-session"></a>
+          5. Create replay session
+      
+        > - Click `POST /mktdata/session`.
+        > - Click `Try it out`.
+        > - Click `Execute`. A new session will be created. Copy the session ID from the `Response body`.
+
+        <a id="stop-session"></a>
+          6. Stop replay session
+      
+        > - Click `PUT /mktdata/session/stop/{sessionId}`.
+        > - Click `Try it out`.
+        > - Click `Execute`. Logs will confirm session has been stopped. `PUT` operations in REST are idempotent and produce the same result no matter how many times they are called. Of course, interleaving different operations will produce different results.
+
+        <a id="start-session"></a>
+          7. Start replay session
+
+        >- Click `PUT /mktdata/session/start/{sessionId}`.
+        > - Click `Try it out`.
+        > - Paste session ID into `Session Id` textbox.
+        > - Click `Execute`. This will start the newly created replay session. Replay service `TRACE` logs for published events will be visible in the terminal window. And after replay session completes, a summary will be logged
+              with the start time, end time, and duration of the replay session. This baseline replays the full dataset at **normal** speed in approximately `58 seconds (00:01:58)`. Last market data event has `id=3453`.
+
+        > - Once a session has completed playing the **full** market data stream, it is automatically **terminated**. Terminated sessions **cannot be restarted**. However, while a session is midstream, it may freely be stopped, restarted, rewound, forwarded, speed changed up/down, jumped to specific event.
+
+        > [Create](#create-session) a brand new session and [start](#start-session) it. Before it finishes [stop](#stop-session).
+
+          <a id="rewind-session"></a>
+          8. Rewind session
+
+        > - Click `PUT /mktdata/session/rewind/{sessionId}`, click `Try it out`, paste session ID into `Session Id` textbox, and click `Execute`. Logs will show the session has been rewound.
+
+        <a id="change-replay-speed"></a> 
+          9. Change replay speed
+
+        > - Click `PUT /mktdata/session/speed/{sessionId}/{speed}`, click `Try it out`, paste session ID into `Session Id` textbox, enter 2.0 in `speed` textbox. Click `Execute`. Confirm replay speed has been doubled (see logs).
+
+          10. [Start](#start-session) the replay session. Events will start streaming at the new speed. When this replay session finishes take a look at the service log tail. Replay **duration** should be approximately *half* the previous replay session since the stream was replayed at *twice* the normal speed.
+
+          11. One final test to get a sense of the raw performance of replay server. First, [create](#create-session) a new replay session. Then [set](#change-replay-speed) replay speed for the new session to a very large value, e.g. `1000.0`. Finally, [start](#start-session) the session. When this replay session finishes take a look the service log tail. Replay duration will be a much smaller number!
         """
     )
     return
@@ -259,10 +282,15 @@ def _(mo):
         r"""
         ### Automation recipe for kicking the tires
 
-        Manual testing works fine but it is cumbersome for runing lots of experiments. For example, it would be great to  test streaming to hundreds of concurrent clients, certainly not easy to do manually. 
+        Manual testing works fine but it is cumbersome for runing lots of experiments. Manully testing streaming to hundreds of concurrent clients is not easy to accomplish. 
 
-        A great way to accomplish this goal is through a Notebook like [Jupyter](https://jupyter.org). In fact, this documenbt you are reading is inside a notebook, except it is a [Marimo](https://marimo.io) Notebook. Marimo is a great Jupyter alternative, purpose built as a git-friendly tool. All performance tests (see below) were conducted using this Notebook. 
+        A great way to accomplish this is through a Notebook, e.g. [Jupyter](https://jupyter.org). In fact, the document you are reading is a [Marimo](https://marimo.io) Notebook. Marimo is a Jupyter alternative, purpose built as a git-friendly dev environment. 
 
+        [Performance](#performance) tests (see below) were conducted using this Marimo Notebook. 
+
+        #### Disable logging
+
+        > For performance testing it is important that excessive logging is disabled. If you had earlier changed the logging level to `TRACE` for manual testing, now is a good time to revert back. Go to *application.properties*, locate `logging.level.com.pragma.demo=TRACE` and replace it with `logging.level.com.pragma.demo=INFO`.
         #### Prerequisites
 
           - Python 3.9.
@@ -272,9 +300,7 @@ def _(mo):
 
         After successfully installing Marimo, open a command line terminal, execute `marimo tutorial intro`. This will launch Marimo with a introductory tutorial. 
 
-        Click on the **settings gear** icon at the top right on Marimo page and from dropdown menu click `User settings`. Click `Runtime` and then uncheck `Autorun on startup`.
-
-        **This setting change is important** to prevent Marimo from auto-executing tests when Notebook is loaded. We want control over running the tests!
+        Click on the **settings gear** icon at the top right on Marimo page and from dropdown menu click `User settings`. Click `Runtime` and uncheck `Autorun on startup`. **This setting change is important** to prevent Marimo from auto-executing tests when the Notebook is loaded. We want control over running the tests!
         """
     )
     return
@@ -286,9 +312,9 @@ def _(mo):
         """
         #### Test setup
 
-        Either load this Notebook in Marimo or exit Marimo, navigate to where this Notebook is stored, and run `marimo edit req_design_test.py`. This will start Maromo and open this Notebook for editing (without auto execution).
+         - Either load the Notebook in Marimo, or exit Marimo, navigate to where this Notebook is stored, and run `marimo edit req_design_test.py`. This will start Marimo and open the Notebook for editing (without auto execution).
 
-        Start the application in VSCode so that REST endpoints are ready for testing.
+         - [Run](#running) the application in VSCode so that REST endpoints are ready for testing.
         """
     )
     return
@@ -366,7 +392,7 @@ def _(BASE_URL, datetime, event_id, requests):
         """
         create_url = BASE_URL
         response = requests.post(create_url)
-        clear_output(wait=True)  # Clear previous output in notebook
+        clear_output(wait=True)  # Clear previous output in Notebook
         if response.status_code == 200:
             session_id = getSessionId(response)
             display(f"Session created: {session_id}", clear=True)

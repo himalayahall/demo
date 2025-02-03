@@ -1,0 +1,512 @@
+---
+title: Req Design Test
+marimo-version: 0.10.19
+width: medium
+auto_download:
+- ipynb
+---
+
+```{.python.marimo}
+import marimo as mo
+```
+
+# Market Data Simulator
+
+## Tech Stack
+
+- Java, Spring Boot, Spring WebFlux, Google Guava (cache), Gradle, JUnit, Mockito, VS Code
+
+## Assumptions
+
+1. I will assume that the simulator will be used by a small number of clients (e.g. >= 0, <= 20). Replay sessions for a small number of clients can be handled on a single server using native Java threads (or threadpool). For a greater number of clients on a single server, virtual threads would work well but they are not quite production grade in Java 17. In any case, one could always spin up additional replay servers along with a load balancer to fan out sessions among servers
+  - [sree] ok
+
+2. I will assume that CSV file contents can fit into replay process memory (all data is cached)
+  - [sree] ok
+
+3. I will assume that simple streaming of data - e.g. server side events or other streaming strategy - is adequate (instead of using pub/sub to offload streaming responsibility to a message broker)
+  -[ sree] correct
+
+4. I will assume that a replay session that is interrupted midstream will not require automatic session reconnect/restart capability
+  - [sree] correct
+
+5. There will be two 'clocks' - a Replay clock and a Simulation clock. The Replay clock (per session) will control the frequency (how often) of data publication to a replay session. The Simulation clock (also per session) will control the quantity (how much) data is published to a replay session
+  - [sree] ok. Had to read the next 2 to understand this. So your ‘Replay clock’ specifies the publishing cadence. Yes, that works.
+
+6. Replay clock granularity will be 1 second (might be configurable) - i.e. data events will be published to each session at 1 second intervals
+  - [sree]  1 sec would likely need some buffering and smoothening out by the UI. Try for an approach that does not require UI to buffer/smooth out. Assume a reasonably powerful server for your app, and the limited number of clients that you noted above to keep the design simple.
+
+7. Simulation clock granularity will be governed by the replay rate (default: 1.0, may be changed by client). For example, a replay rate of 1.0 would advance the simulation
+clock in lockstep with the replay clock. And a replay rate of 1.5 would advance the simulation clock at 1.5X the Replay rate - e.g. each time the replay clock advances by 1 second (1000 milliseconds), the simulation clock will advance by 1.5 seconds (1500 millisecs)
+  - [sree] yes. Support both speed up and slow down.
+
+8. During each publishing interval (see 6) all unpublished events within the session simulation clock window will be published
+  - [sree] ok
+
+9. Data will be published as JSON (CSV row data -> Record -> JSON conversion done on replay server)
+  - [sree] ok
+
+10. Security (Https) and authentication out of scope
+<!---->
+## Requirements
+
+### Functional
+
+1. Stream market data events to Web clients.
+2. Allow multiple clients - i.e. mujst support concurrent replay sessions.
+3. Clients should be able to control replay sessions by sending the following commands:
+    - **Create** replay session.
+    - **Start** & **Stop** session.
+    - **Rewind** session - i.e. rewind to beginning of market data event stream.
+    - **Set replay speed** - i.e. **speed up** replay to N, where $N \gt 1.0$. **Slow down** replay to M where $0.0 \lt M \lt 1.0$.
+    - **Fast forward** replay session - i.e. skip **N** market data events in replay session, where $N \gt 0$. Forwarding past event stream stops the replay session.
+    - **Goto event** - i.e. jump to specific market data event (by event ID) in replay session.
+
+### Non-Functional
+
+1. **Performance**
+    - **Throughput** -  replay at sustained high throughput (up to 3000 events/sec).
+    - **Scale** - support large number of clients (0, 100) without throughput degradation.
+   - **Stability**
+2. **Design Quality** - design should be easy to understand and to update.
+3. **Code Quality** - code should be production quality with good documentation.
+4. **Testing** - implementation should be easily testable and performance claims should be backed by evidence.
+<!---->
+## Design decisions
+
+- **Spring Boot application** with **RESTful APIs** for replay controls.
+- **Reactive SpringFlux** application for streaming market data events.
+- **Data** -> read from [CSV file](https://github.com/himalayahall/demo/blob/9f346eac082b2ba9300041759bce3413532ba7fa/src/main/resources/marketdata-for-coding-challenge.csv). FYI - file had invisible BOM which caused a lot of head scratching before I pinpointed the cause and fixed it (see below).
+- **Session cache** - sessions are stored in Google Guava cache, **stale** sessions are ejected after a configurable timeout.
+- **Sliding window** -> virtual sliding window moves over cached events, during each publishing cycle ALL events under sliding window are published.
+- Two settings control the sliding window and event publication
+    - **publishTimerMillis** ->  controls how often the sliding window is moved. Default: 1 millisecond, configurable via *application.properties*.
+    - **replayClockMillis** -> tracks how far time has progressed in a replay session. It effectively controls the sliding window size. It is initialized to the timestamp of first data event. At each publishing cycle all *unpublished* events with $timestamp \leq replayClockMillis$ are published,
+and replayClockMillis advances in increment of $replaySpeed \times publishTimerMillis$ .
+
+  - **replaySpeed** -> controls how fast the replay clock advances. For example, suppose  $publishTimerMillis =  1$ and $replaySpeed = 1.0$. During each publishing cycle (at 1 ms intervals) replayClockMillis will advance by 1 ms (publishTimerMillis * replaySpeed).
+
+    Suppose replaySpeed is bumped up to 2.0. During the following publishing cycle replayClockMillis will advance by 2 ms, even though  1 ms has passed on the system clock ($publishTimerMillis = 1$). This works both for speeding up ($replaySpeed \gt 1.0$) and slowing down ($replaySpeed \lt 1.0)$ replay.
+<!---->
+## Key Classes
+- **MarketDataController** - entry point for the REST API.
+- **ReplayService** - services for managing the lifecycle of sessions.
+- **ReplaySession** - interface session state machine, handles commands (stop, start, etc.).
+    - **ReplaySessionImpl** - default implementation of ReplaySession
+- **MarketDataEvent** - record (model) with data from the market data CSV file.
+- **CSVReaderService** - CSV reader service interface
+      - **JacksonCSVReader** - Jackson implementation (default).
+      - **ApacheCSVReaderService** - Apache Commons implementation. Tried this first but was not clean code (deprecated API, dealing with BOM was cumbersome).
+<!---->
+## Unit Testing
+
+- Unit tests are used to test basic functionality of the replay service including Start, Stop, Set Replay Speed, Rewind (Reset), Forward, Jump to Event.
+<!---->
+## Installation
+  - Prerequisites - Java (17 or higher), Java IDE (VSCode, IntelliJ, Eclipse).
+  - Clone project.
+<!---->
+### Running
+
+- Load project in VSCode (or another IDE).
+- Open terminal inside VSCode (to view replay service logs).
+- Run application from VSCode.
+- On successful launch below logs will be rendered.
+-----
+```
+     ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.1.5)
+
+2025-02-02T10:12:06.627-05:00  INFO 2351 --- [           main] com.pragma.demo.DemoApplication          : Starting DemoApplication using Java 17.0.10 with PID 2351 (/Users/jawaidhakim/Jobs/MarketAxess/demo/bin/main started by jawaidhakim in /Users/jawaidhakim/Jobs/MarketAxess/demo)
+2025-02-02T10:12:06.630-05:00  INFO 2351 --- [           main] com.pragma.demo.DemoApplication          : No active profile set, falling back to 1 default profile: "default"
+2025-02-02T10:12:07.551-05:00  INFO 2351 --- [           main] com.pragma.demo.service.ReplayService    : Events: 3452, First: 09:30:00:213, Last: 09:31:58:406
+2025-02-02T10:12:08.076-05:00  INFO 2351 --- [           main] o.s.b.web.embedded.netty.NettyWebServer  : Netty started on port 8080
+2025-02-02T10:12:08.093-05:00  INFO 2351 --- [           main] com.pragma.demo.DemoApplication          : Started DemoApplication in 1.753 seconds (process running for 2.081)
+```
+
+```{.python.marimo}
+mo.md(r""" """)
+```
+
+## RESTful API
+
+### Documentation
+- Static (may be out of data with latest changes) OpenAPI Documentation can be found [here](https://github.com/himalayahall/demo/blob/5bbd1c5971250a09ce0872e3b4562cf2fa36e17a/api-documentation.pdf).
+<!---->
+### Using the API
+
+RESTful API can be used in the usual ways. Below are 2 no-code ways of using tthe API:
+
+  1. **Spring OpenAPI** browser interface is baked into the application. To use this interface - run the application and use the Open API bu opening http://localhost:8080/swagger-ui.html in a browser.
+
+  2. Use [Curl](https://curl.se) to access the API. For example, execute `curl -X GET http://localhost:8080/session/subscribe/e8cc93be-3723-4c37-8681-b3fa6d3b7a79` from a terminal to subscribe for events on session
+`e8cc93be-3723-4c37-8681-b3fa6d3b7a79`.
+<!---->
+## Testing and QA
+
+Replay service can be tested manually or via automation.
+
+### Manual recipe for kicking the tires
+
+  1. Start replay service (see **Installation**).
+  2. Go to http://localhost:8080/swagger-ui.html.
+  3. Click **`POST /mktdata/session`**.
+  4. Click **`Try it out`**.
+  5. Click **`Execute`**. A new session will be created. Copy the session ID from the **`Response body`**.
+<a id="step-6"></a>
+  6. Click `PUT /mktdata/session/start/{sessionId}`.
+  7. Click `Try it out`.
+  8. Paste session ID into `Session Id` textbox.
+  9. Click `Execute`. This will start replay session. Service logs for published events will be visible in the terminal window. When replay finishes a summary will be logged
+      with the start time, end time, and duration of the replay session. This baseline shows the time taken to replay the full dataset at *normal* speed, it should be approximately equal to the recording duration.
+<a id="step-10"></a>
+  10. Now for the fun part! Click `/mktdata/session/rewind/{sessionId}`, click `Try it out`, paste session ID into `Session Id` textbox, click `Execute`. The session has been rewound.
+<a id="step-11"></a>
+  11. Now double the replay speeed: click `/mktdata/session/speed/{sessionId}/{speed}`, click `Try it out`, paste session ID into `Session Id` textbox, enter 2.0 in `speed` textbox. Click `Execute`. Replay speed has been doubled.
+  12. Restart the session (repeat [step 6-9](#step-6)), events will  be streamed at the new replay speed. When this replay session finishes take a look at the service log tail. Replay **duration** should be approximately *half* the previous replay session since the stream was replayed at *twice* the normal speed.
+  13. One more test to get a sense of the raw performance of replay server. Rewind session again (see [step 10](#step-10)). Now make the replay speed (see [step 11](#step-11)) very large, e.g. `10000.0`. Start the replay session (see [step 6-9](#step-6)). When this replay session finishes take a look the service log tail. Replay duration will be a very small number (milliseconds).
+<!---->
+### Automation recipe for kicking the tires
+
+Manual testing works fine but it is cumbersome for runing lots of experiments. For example, it would be great to  test streaming to hundreds of concurrent clients, certainly not easy to do manually.
+
+A great way to accomplish this goal is through a Notebook like [Jupyter](https://jupyter.org). In fact, this documenbt you are reading is inside a notebook, except it is a [Marimo](https://marimo.io) Notebook. Marimo is a great Jupyter alternative, purpose built as a git-friendly tool. All performance tests (see below) were conducted using this Notebook.
+
+#### Prerequisites
+
+  - Python 3.9.
+  - Marimo.
+
+#### Marimo setup
+
+After successfully installing Marimo, open a command line terminal, execute `marimo tutorial intro`. This will launch Marimo with a introductory tutorial.
+
+Click on the **settings gear** icon at the top right on Marimo page and from dropdown menu click `User settings`. Click `Runtime` and then uncheck `Autorun on startup`.
+
+**This setting change is important** to prevent Marimo from auto-executing tests when Notebook is loaded. We want control over running the tests!
+<!---->
+#### Test setup
+
+Either load this Notebook in Marimo or exit Marimo, navigate to where this Notebook is stored, and run `marimo edit req_design_test.py`. This will start Maromo and open this Notebook for editing (without auto execution).
+
+Start the application in VSCode so that REST endpoints are ready for testing.
+
+```{.python.marimo}
+# Import dependencies. 
+# Async IO packages are needed to test concurrent sessions without blocking.
+import requests
+import time
+import asyncio
+import nest_asyncio
+from datetime import datetime
+```
+
+```{.python.marimo}
+# Define base URL for API
+BASE_URL = "http://localhost:8080/mktdata/session"
+```
+
+```{.python.marimo}
+# Functions for interacting with RESTful aPI
+from IPython.display import clear_output, display
+
+def decodeResponse(response : any) -> str:
+    """
+    Decode response from REST endpoint. All PUT endpoints (create session, start, stop, rewind, jump) return string, GET endpoint (subscribe) returns a stream of JSON docs. This function handles both gracefully.
+    Args:
+        response - Response from replay service.
+    Returns:
+        str: The string or JSON response from replay service.
+    """
+    try:
+        # Try to parse JSON, if it fails, handle the string response
+        resp = response.json()
+    except ValueError:  # If JSON decoding fails
+        # Handle the case where response is a simple string
+        resp = response.text
+    return resp
+
+def compute_duration(start_datetime : datetime) -> str:
+    """
+        Compute duration between a start time and now.
+
+        Args:
+            start_datetime (datetime): Start time.
+
+        Returns:
+
+            str: Duration formatted as hh:mm:ss.zzz
+    """
+    duration = datetime.now() - start_datetime
+
+    total_seconds = duration.total_seconds()
+    hours, remainder = divmod(total_seconds, 3600)
+    minutes, remainder = divmod(remainder, 60)
+    seconds, milliseconds = divmod(remainder, 1)
+
+    return f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}:{int(milliseconds * 1000):03}"
+
+def getSessionId(response : any) -> str:
+    return decodeResponse(response)
+
+def createSession() -> str:
+    """
+    Create replay session.
+
+    Returns:
+        Session Id or None.
+    """
+    create_url = BASE_URL
+    response = requests.post(create_url)
+    clear_output(wait=True)  # Clear previous output in notebook
+    if response.status_code == 200:
+        session_id = getSessionId(response)
+        display(f"Session created: {session_id}", clear=True)
+    else:
+        display(f"Failed to create session: {response.text}")
+        session_id = None
+    return session_id
+
+def setSpeed(session_id : str, speed : float) -> None:
+    """
+    Set replay speed.
+
+    Args:
+        session_id (str): Session Id.
+        speed: Replay speed. Must be POSITIVE.
+    """
+    if session_id:
+        speed_url = f"{BASE_URL}/speed/{session_id}/{speed}"
+        response = requests.put(speed_url)
+        display(f"{response.text}", clear=True)
+
+def startSession(session_id : str) -> None:
+    """
+    Start replay session. Event stream for this session will start publishing.
+
+    Args:
+        session_id (str): Session Id.
+    """
+    if session_id:
+        start_url = f"{BASE_URL}/start/{session_id}"
+        response = requests.put(start_url)
+        display(f"{response.text}", clear=True)
+
+def stopSession(session_id : str) -> None:
+    """
+    Stop replay session. Event stream for this session will stop publishing.
+
+    Args:
+        session_id (str): Session Id.
+    """
+    if session_id:
+        stop_url = f"{BASE_URL}/stop/{session_id}"
+        response = requests.put(stop_url)
+        display(f"{response.text}", clear=True)
+
+def rewindSession(session_id : str) -> None:
+    """
+    Rewind (reset) replay session to begging of event stream.
+
+    Args:
+        session_id (str): Session Id.
+    """
+    if session_id:
+        rewind_url = f"{BASE_URL}/rewind/{session_id}"
+        response = requests.put(rewind_url)
+        display(f"{response.text}", clear=True)
+
+def forward(session_id : str, skip_count: int) -> None:
+    """
+    Fast forward replay session by skipping one or more events.
+
+    Args:
+        session_id (str): Session Id.
+        skip_count (int): Number of events to skip. Must be POSITIVE. Forwarding past the end of event stream stops the session.
+    """
+    if session_id:
+        forward_url = f"{BASE_URL}/jump/{session_id}/{event_id}"
+        response = requests.put(forward_url)
+        display(f"{response.text}", clear=True)
+
+def jumpToEvent(session_id : str, event_id: int) -> None:
+    """
+    Jump to event in replay session.
+
+    Args:
+        session_id (str): Session Id.
+        event_id (int): Event Id.
+    """
+    if session_id:
+        jump_url = f"{BASE_URL}/jump/{session_id}/{event_id}"
+        response = requests.put(jump_url)
+        print(f"{response.text}")
+```
+
+```{.python.marimo}
+import aiohttp
+
+async def subscribeSession(session_id : str) -> None:
+    """
+    Subscribe to replay session. Starts listening for session event stream and precesses  event until the strem is closed by server.
+
+    Args:
+
+        session_id (str): Session Id.
+    """
+    # if session_id:
+    #     start_datetime = datetime.now()
+
+    #     subscribe_url = f"{BASE_URL}/subscribe/{session_id}"
+    #     response = requests.get(subscribe_url, stream=True)
+
+    #     # Process and display streaming data
+    #     for chunk in response.iter_lines(decode_unicode=True):
+    #         try:
+    #             if chunk:
+    #                 pass
+    #         except KeyboardInterrupt:
+    #             display(f"Subscribe session {session_id} stopped manually", clear)
+
+    #     duration = compute_duration(start_datetime)
+    #     display(f"Subscribe session {session_id} finished at {datetime.now()}: {duration}", clear=True)
+    if session_id:
+
+        start_datetime = datetime.now()
+        subscribe_url = f"{BASE_URL}/subscribe/{session_id}"
+
+        async with aiohttp.ClientSession() as aiohttp_session:
+            try:
+                async with aiohttp_session.get(subscribe_url) as response:
+                    async for line in response.content.iter_any():
+                        chunk = line.decode('utf-8').strip()
+                        if chunk:
+                            try:
+                                pass  # Process the chunk here
+                            except KeyboardInterrupt:
+                                print(f"Subscribe session {session_id} stopped manually")
+            except aiohttp.ClientPayloadError:
+                display("Error: Response payload is incomplete.")
+            except Exception as e:
+                display(f"Unexpected error: {e}")
+
+        duration = compute_duration(start_datetime)
+        display(f"Subscribe session {session_id} finished at {datetime.now()}: {duration}", clear=True)
+
+
+async def subscribeSessions(sessions : List[str]) -> None:
+    """
+    Subscribe to 1 or more sessions.
+
+    Args:
+
+        sessions(List[str]) : Session Ids.
+    """
+    tasks = [subscribeSession(session) for session in sessions]
+    await asyncio.gather(*tasks)
+```
+
+#### Set session count and replay speed.
+
+```{.python.marimo}
+SESSION_COUNT = 1
+SPEED = 10.0
+```
+
+#### Create sessions.
+
+```{.python.marimo}
+sessions = []
+
+for sesssion_count in range(0, SESSION_COUNT):
+    sessionId = createSession()
+    sessions.append(sessionId)
+```
+
+#### Set replay speed.
+
+```{.python.marimo}
+for speed_session in sessions:
+    setSpeed(speed_session, SPEED)
+```
+
+#### Subscribe to sessions.
+<!---->
+#### Start replay sessions and subscribe to event streams.
+
+This may be a long-running operation, a timer on right side of cell will show progress. On the server logs you *may* see log entries (`DEBUG` log level). In all cases, the server will log end of sessions. Below will be output of completion logs from sessions, log from last completing session will overwite previous output. At the end the log of the last completing session will be visible.
+
+```{.python.marimo}
+for start_session in sessions:
+    startSession(start_session)
+
+await subscribeSessions(sessions)
+```
+
+## Performance
+
+Below are performance test results on Apple Macbook with 1.4 GHz Quad-Core Intel Core i5 with 16GB 2133 MHz RAM. Amazon Corretto 17 JDK, Heap Size (-Xmx and -Xms): 4096 MB. Client and server processes were running on same machine.
+
+Note, baseline is a single client running at speed = 1.0 - it takes roughly 2 minutes to publish all data events. With [1, 10,100, 1000] clients running at speed = 1, there is no performance impact on server.
+
+When replay speed is increased to 10, performance is impacted with number of $clients \gt 100$. There appears to be **linear** growth in **latency** but server continues to satisfy basic functional requirements up to 600 clients. See latency plot below.
+
+
+| # Sessions | Replay Speed | Duration <br> `hh:mm:ss:zzz`|
+|------------|--------------|--------------|
+| 1          | 1            | 00:01:58:195 |
+| 10         | 1            | 00:01:58:172 |
+| 100        | 1            | 00:01:58:162 |
+| 1000       | 1            | 00:01:58:162 |
+|------------|--------------|--------------|
+| 1          | 10           | 00:00:11:818 |
+| 10         | 10           | 00:00:11:777 |
+| 100        | 10           | 00:00:11:787 |
+| 200        | 10           | 00:00:14:203 |
+| 400        | 10           | 00:00:22:156 |
+| 500        | 10           | 00:00:25:950 |
+| 600        | 10           | 00:00:32:068 |
+
+```{.python.marimo}
+import pandas as pd
+import matplotlib.pyplot as plt
+import datetime
+
+# Sample list of timestamps with format hh:mm:ss (time taken for requests)
+times_in_seconds = [11, 11, 11, 14, 22, 25, 32]
+
+# Generate the X-axis labels representing the number of clients (1, 2, 3, ...)
+clients = [1, 10, 100, 200, 400, 500, 600]
+
+# Plot the processing times per client
+plt.figure(figsize=(10, 5))
+plt.plot(clients, times_in_seconds, marker="o", linestyle="-", color="b", label="Replay Time")
+
+# Format the plot
+plt.xlabel("Number of Clients")
+plt.ylabel("Replay Time (seconds)")
+plt.title("Replay Time at Fixed Speed (10.0)")
+plt.xticks(clients)  # Label X-axis with client numbers
+plt.legend()
+plt.grid(True)
+
+# Show the plot
+plt.show()
+```
+
+### Ideas for Performance Improvement
+
+- Run replay server and client on separate machines.
+- Make sure network card on machine is performance.
+- Carefully tune JVM and dependent libraries. Use a binary wire encoding like Google Proto to cut down network traffic.
+- Cache large datasets in a distributed cache like Redis.
+- Horizontal scaling -> launch additional replay server processes with a Load Balancer to fan out traffic among the servers. Sticky connections would pin client traffic to the same server.
+
+## Conclusion
+
+As above tests demonstrate, replay server satisfies all the [Functional](#functional) and [Non-Functional](#non-functional) requirements.

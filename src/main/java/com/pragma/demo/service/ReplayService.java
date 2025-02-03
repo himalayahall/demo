@@ -84,6 +84,11 @@ public class ReplayService {
     public void start(String sessionId) {
         Optional<ReplaySession> session = Optional.ofNullable(cache.getIfPresent(sessionId));
         if (session.isPresent()) {
+            ReplaySession sess = session.get();
+            if (sess.isTerminated()) {
+                log.trace(sessionId + " is terminated. Create a new session.");
+                throw new ReplayException("Session is terminated. Cannot start.");
+            }
             session.get().start();
         }
     }

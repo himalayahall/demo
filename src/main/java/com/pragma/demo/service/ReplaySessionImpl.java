@@ -34,15 +34,16 @@ public class ReplaySessionImpl implements ReplaySession {
     // Is session in running state. Stopped session does not publish events
     private AtomicBoolean isRunning = new AtomicBoolean(false);
 
+    // I ssession terminated. Terminated session cannot be restarted.
+    private AtomicBoolean isTerminated = new AtomicBoolean(false);
+
 
     // Replay speed. Speed: 1.0 => normal speed, 2.0 => double normal speed, 0.5 => half normal
     // speed
     private AtomicReference<Double> replaySpeed = new AtomicReference<>(1.0);
 
-    private final Sinks.Many<MarketDataEvent> eventSink =
-            Sinks.many().unicast().onBackpressureBuffer();
-    private final Flux<MarketDataEvent> eventFlux = eventSink.asFlux();
-
+    private final Sinks.Many<MarketDataEvent> eventSink;
+    private final Flux<MarketDataEvent> eventFlux;
 
     public ReplaySessionImpl(String sessionId, List<MarketDataEvent> events,
             long publishTimerMillis) {
@@ -50,29 +51,41 @@ public class ReplaySessionImpl implements ReplaySession {
         this.events = events;
         this.publishTimerMillis = publishTimerMillis;
 
-        rewind();
+        this.eventSink = Sinks.many().unicast().onBackpressureBuffer();
+        this.eventFlux = eventSink.asFlux().doOnComplete(() -> {
+            log.trace("Session: {} - event stream completed", sessionId);
+        }).doOnCancel(() -> {
+            log.trace("Session: {} - event stream cancelled", sessionId);
+        });
+        doRewind();
     }
 
     @Override
     public void start() {
-        log.trace("start session: {}", sessionId);
+        log.trace("start session: {}, subscriber count: {}", sessionId, eventSink.currentSubscriberCount());
+
+        if (isTerminated.get()) {
+            throw new ReplayException("Session is already terminated: " + sessionId);
+        }
 
         long startMillis = System.currentTimeMillis();
         isRunning.set(true);
-        Flux.interval(Duration.ofMillis(publishTimerMillis), SCHEDULER)
-                .takeWhile(tick -> isRunning.get() && currentIndex.get() < events.size())
+        Flux.interval(Duration.ofMillis(publishTimerMillis), SCHEDULER).takeWhile(
+                tick -> isRunning() && !isTerminated() && currentIndex.get() < events.size())
                 .subscribe(tick -> {
                     // Publish all events with timestamp <= simulationClockMillis
                     while (currentIndex.get() < events.size()
                             && events.get(currentIndex.get()).timestamp() <= replayClockMillis) {
-                        
+
                         MarketDataEvent event = events.get(currentIndex.getAndIncrement());
-                        log.trace("replay event: {} on session: {}", event, sessionId);
                         Sinks.EmitResult result = eventSink.tryEmitNext(event);
                         if (result.isFailure()) {
                             log.error("Failed to emit event: {}, session: {}, result: {}", event,
                                     sessionId, result);
-                            // TODO: Handle the failure (e.g., retry, stop the session, etc.)
+                            // TODO: What to do in case of failure?
+                        }
+                        else {
+                            log.trace("replay event: {} on session: {}", event, sessionId);
                         }
                     }
 
@@ -80,8 +93,12 @@ public class ReplaySessionImpl implements ReplaySession {
                     replayClockMillis += (replaySpeed.get() * publishTimerMillis);
 
                     if (currentIndex.get() >= events.size()) {
+
+                        log.trace("Completing eventSink for session: {}", sessionId);
                         eventSink.tryEmitComplete();
-                        
+
+                        isTerminated.set(true);
+
                         long endMillis = System.currentTimeMillis();
                         String fmtDuration = DurationFormatUtils.formatDuration(
                                 Duration.ofMillis(endMillis - startMillis).toMillis(),
@@ -96,17 +113,19 @@ public class ReplaySessionImpl implements ReplaySession {
     public void stop() {
         log.trace("stop session: {}", sessionId);
         isRunning.set(false);
-        eventSink.tryEmitComplete();
     }
 
     @Override
     public void rewind() {
         log.trace("rewind session: {}", sessionId);
+        doRewind();
+    }
+
+    private void doRewind() {
         currentIndex.set(0);
         if (!events.isEmpty())
-            this.replayClockMillis = events.get(0).timestamp(); // Reset clock to the first
+            this.replayClockMillis = events.get(0).timestamp(); // Reset clock to first
                                                                 // event's
-        // timestamp
         else
             this.replayClockMillis = 0;
     }
@@ -172,5 +191,15 @@ public class ReplaySessionImpl implements ReplaySession {
     @Override
     public String toString() {
         return String.format("Session: {}, Created: {}", sessionId, created);
+    }
+
+    @Override
+    public boolean isRunning() {
+        return isRunning.get();
+    }
+
+    @Override
+    public boolean isTerminated() {
+        return isTerminated.get();
     }
 }
