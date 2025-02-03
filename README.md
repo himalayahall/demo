@@ -14,7 +14,7 @@ import marimo as mo
 
 ## Tech Stack
 
-- Java, Spring Boot, Spring WebFlux, Google Guava (cache), Gradle, JUnit, Mockito, VS Code
+- Java, Spring Boot, Spring WebFlux, Google Guava (cache), Gradle, JUnit, Mockito, Marimo (Jupyter replacement) for documentation and automated performance testing, VS Code
 
 ## Assumptions
 
@@ -53,7 +53,7 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 ### Functional
 
 1. Stream market data events to Web clients.
-2. Allow multiple clients - i.e. mujst support concurrent replay sessions.
+2. Allow multiple clients - i.e. must support concurrent replay sessions.
 3. Clients should be able to control replay sessions by sending the following commands:
     - **Create** replay session.
     - **Start** & **Stop** session.
@@ -68,7 +68,7 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
     - **Throughput** -  replay at sustained high throughput (up to 3000 events/sec).
     - **Scale** - support large number of clients (0, 100) without throughput degradation.
    - **Stability**
-2. **Design Quality** - design should be easy to understand and to update.
+2. **Design Quality** - design should be easy to understand and update.
 3. **Code Quality** - code should be production quality with good documentation.
 4. **Testing** - implementation should be easily testable and performance claims should be backed by evidence.
 <!---->
