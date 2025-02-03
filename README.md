@@ -9,7 +9,7 @@ auto_download:
 ```{.python.marimo}
 import marimo as mo
 ```
-
+ 
 # Market Data Simulator
 
 ## Tech Stack
