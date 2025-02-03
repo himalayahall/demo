@@ -36,3 +36,4 @@ out/
 ### VS Code ###
 .vscode/
 /src/main/marimo/__pycache__
+/src/main/marimo/__pycache__
