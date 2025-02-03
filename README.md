@@ -180,7 +180,7 @@ Replay service can be tested manually or via automation.
 
 > - Once a session has completed playing the **full** market data stream, it is automatically **terminated**. Terminated sessions **cannot be restarted**. However, while a session is midstream, it may freely be stopped, restarted, rewound, forwarded, speed changed up/down, jumped to specific event.
 
-> [Create](#create-session) a brand new session and [start](#start-session) it. Before it finishes [stop](#stop-session).
+> [Create](#create-session) a brand new session and [start](#start-session) it. [Stop](#stop-session) the session befoe it completes.
 
   <a id="rewind-session"></a>
   8. Rewind session
