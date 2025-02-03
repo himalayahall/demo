@@ -233,14 +233,14 @@ def _(mo):
 
         <a id="create-session"></a>
           5. Create replay session
-      
+
         > - Click `POST /mktdata/session`.
         > - Click `Try it out`.
         > - Click `Execute`. A new session will be created. Copy the session ID from the `Response body`.
 
         <a id="stop-session"></a>
           6. Stop replay session
-      
+
         > - Click `PUT /mktdata/session/stop/{sessionId}`.
         > - Click `Try it out`.
         > - Click `Execute`. Logs will confirm session has been stopped. `PUT` operations in REST are idempotent and produce the same result no matter how many times they are called. Of course, interleaving different operations will produce different results.
@@ -300,7 +300,7 @@ def _(mo):
 
         After successfully installing Marimo, open a command line terminal, execute `marimo tutorial intro`. This will launch Marimo with a introductory tutorial. 
 
-        Click on the **settings gear** icon at the top right on Marimo page and from dropdown menu click `User settings`. Click `Runtime` and uncheck `Autorun on startup`. **This setting change is important** to prevent Marimo from auto-executing tests when the Notebook is loaded. We want control over running the tests!
+        Click on **settings icon** ⚙️ at the top right on Marimo page and from dropdown menu click `User settings`. Click `Runtime` and uncheck `Autorun on startup`. **This setting change is important** to prevent Marimo from auto-executing tests when the Notebook is loaded. We want control over running the tests!
         """
     )
     return
@@ -565,7 +565,7 @@ def _(mo):
 @app.cell
 def _():
     SESSION_COUNT = 1
-    SPEED = 10.0
+    SPEED = 1000.0
     return SESSION_COUNT, SPEED
 
 
@@ -587,7 +587,7 @@ def _(SESSION_COUNT, createSession):
 
 @app.cell
 def _(mo):
-    mo.md("""#### Set replay speed.""")
+    mo.md("""#### Set session replay speed.""")
     return
 
 
@@ -600,17 +600,11 @@ def _(SPEED, sessions, setSpeed):
 
 @app.cell
 def _(mo):
-    mo.md("""#### Subscribe to sessions.""")
-    return
-
-
-@app.cell
-def _(mo):
     mo.md(
         """
         #### Start replay sessions and subscribe to event streams. 
 
-        This may be a long-running operation, a timer on right side of cell will show progress. On the server logs you *may* see log entries (`DEBUG` log level). In all cases, the server will log end of sessions. Below will be output of completion logs from sessions, log from last completing session will overwite previous output. At the end the log of the last completing session will be visible.
+        This could be a long-running operation, a timer on right side of cell shows progress. Below the cell will be output of completion logs from sessions. Note, log from last completing session will overwite previous output. Sine REST call are made asynchronously, it is possible that the log from a long running session is overwritten by the log from a shorter session.
         """
     )
     return
@@ -631,11 +625,15 @@ def _(mo):
         r"""
         ## Performance
 
-        Below are performance test results on Apple Macbook with 1.4 GHz Quad-Core Intel Core i5 with 16GB 2133 MHz RAM. Amazon Corretto 17 JDK, Heap Size (-Xmx and -Xms): 4096 MB. Client and server processes were running on same machine. 
+        Below are performance test results were run on a Apple Macbook with 1.4 GHz Quad-Core Intel Core i5 with 16GB 2133 MHz RAM. Amazon Corretto 17 JDK, Heap Size (-Xmx and -Xms): 4096 MB. Client and server processes were running on same machine. 
 
-        Note, baseline is a single client running at speed = 1.0 - it takes roughly 2 minutes to publish all data events. With [1, 10,100, 1000] clients running at speed = 1, there is no performance impact on server. 
+        Since testing was done using `localhost` (bypassing the physical network) there was no network latency, packet loss, or bandwidth constraints. However, clients are running inside a Marimo notebook with browser updates, which will have significant impact on performance with large number of concurrent clients.
 
-        When replay speed is increased to 10, performance is impacted with number of $clients \gt 100$. There appears to be **linear** growth in **latency** but server continues to satisfy basic functional requirements up to 600 clients. See latency plot below.
+        Baseline testcase is a single client running at replay `speed = 1.0` - it takes roughly `2 minutes` to publish all data events. With `[1, 10,100, 1000]` clients running at `speed = 1.0`, there is no performance impact. 
+
+        A single client running at replay `speed = 1000.0` received all events in `00:00:00:544`, which works out to roughly 6000 events/sec.
+
+        However, with larger number of clients running at higher speeds, performance is impacted. Latency growth is **linear** for $clients \gt\ 100$. Still, the server continues to be functional and satisfy design requirements. See latency plot below.
 
 
         | # Sessions | Replay Speed | Duration <br> `hh:mm:ss:zzz`|
@@ -661,7 +659,6 @@ def _(mo):
 def _():
     import pandas as pd
     import matplotlib.pyplot as plt
-    import datetime
 
     # Sample list of timestamps with format hh:mm:ss (time taken for requests)
     times_in_seconds = [11, 11, 11, 14, 22, 25, 32]
@@ -683,7 +680,7 @@ def _():
 
     # Show the plot
     plt.show()
-    return clients, datetime, pd, plt, times_in_seconds
+    return clients, pd, plt, times_in_seconds
 
 
 @app.cell
@@ -693,7 +690,7 @@ def _(mo):
         ### Ideas for Performance Improvement
 
         - Run replay server and client on separate machines.
-        - Make sure network card on machine is performance.
+        - Make sure network interfaces on test machines have sufficient performance.
         - Carefully tune JVM and dependent libraries. Use a binary wire encoding like Google Proto to cut down network traffic.
         - Cache large datasets in a distributed cache like Redis.
         - Horizontal scaling -> launch additional replay server processes with a Load Balancer to fan out traffic among the servers. Sticky connections would pin client traffic to the same server.
