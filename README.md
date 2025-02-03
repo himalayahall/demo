@@ -534,7 +534,8 @@ plt.show()
 
 - Run replay server and client on separate machines.
 - Make sure network interfaces on test machines have sufficient performance.
-- Carefully tune JVM and dependent libraries. Use a binary wire encoding like Google Proto to cut down network traffic.
+- Carefully tune JVM, dependent libraries, frameworks.
+- Use a binary wire encoding like Google Proto to cut down network traffic.
 - Cache large datasets in a distributed cache like Redis.
 - Horizontal scaling -> launch additional replay server processes with a Load Balancer to fan out traffic among the servers. Sticky connections would pin client traffic to the same server.
 
