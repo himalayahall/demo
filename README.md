@@ -137,7 +137,7 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 
 RESTful API can be used in the usual ways. Below are 2 no-code ways of using tthe API:
 
-  1. **Spring OpenAPI**  interface is baked into the application. To use this interface - [run the application](#running) and then go to http://localhost:8080/swagger-ui.html.
+  1. **Spring OpenAPI**  interface is baked into the application. To use this interface - [start](#running) replay service and then go to http://localhost:8080/swagger-ui.html.
 
   2. Use [curl](https://curl.se) to access the API. For example, execute `curl -X GET http://localhost:8080/session/subscribe/e8cc93be-3723-4c37-8681-b3fa6d3b7a79` from a terminal to subscribe for events on session
 `e8cc93be-3723-4c37-8681-b3fa6d3b7a79`.
@@ -152,7 +152,7 @@ Replay service can be tested manually or via automation.
 
      > - In *application.properties*, locate `logging.level.com.pragma.demo=INFO` and replace it with `logging.level.com.pragma.demo=TRACE`. This will enable TRACE level logging which will be come in handy for manual testing.
 
-  3. [Start replay service](#running).
+  3. [Start](#running) replay service.
   4. Go to http://localhost:8080/swagger-ui.html.
 
 <a id="create-session"></a>
