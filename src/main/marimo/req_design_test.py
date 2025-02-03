@@ -538,7 +538,7 @@ def _(mo):
 
 @app.cell
 def _():
-    SESSION_COUNT = 1000
+    SESSION_COUNT = 1
     SPEED = 10.0
     return SESSION_COUNT, SPEED
 
@@ -626,7 +626,6 @@ def _(mo):
         | 400        | 10           | 00:00:22:156 |
         | 500        | 10           | 00:00:25:950 |
         | 600        | 10           | 00:00:32:068 |
-
         """
     )
     return
@@ -658,7 +657,6 @@ def _():
 
     # Show the plot
     plt.show()
-
     return clients, datetime, pd, plt, times_in_seconds
 
 
@@ -666,7 +664,6 @@ def _():
 def _(mo):
     mo.md(
         r"""
-
         ### Ideas for Performance Improvement
 
         - Run replay server and client on separate machines.
