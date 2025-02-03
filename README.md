@@ -152,7 +152,7 @@ Replay service can be tested manually or via automation.
 
      > - In *application.properties*, locate `logging.level.com.pragma.demo=INFO` and replace it with `logging.level.com.pragma.demo=TRACE`. This will enable TRACE level logging which will be come in handy for manual testing.
 
-  3. [Start replay service](#installation).
+  3. [Start replay service](#running).
   4. Go to http://localhost:8080/swagger-ui.html.
 
 <a id="create-session"></a>
