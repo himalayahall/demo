@@ -1,7 +1,6 @@
 package com.pragma.demo.controller;
 
 import jakarta.validation.constraints.Positive;
-import lombok.extern.slf4j.Slf4j;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,7 +16,6 @@ import com.pragma.demo.service.ReplayException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@Slf4j
 @RestController
 @RequestMapping("/mktdata")
 @Tag(name = "Market Data Replay",

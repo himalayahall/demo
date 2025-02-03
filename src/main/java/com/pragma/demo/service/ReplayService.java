@@ -16,12 +16,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
 
 
 /**
@@ -78,7 +72,7 @@ public class ReplayService {
     public String createSession() {
         String sessionId = UUID.randomUUID().toString();
         cache.put(sessionId, new ReplaySessionImpl(sessionId, events, publishTimerMillis));
-        log.info("create session: {}", sessionId);
+        log.trace("create session: {}", sessionId);
         return sessionId;
     }
 
@@ -167,7 +161,7 @@ public class ReplayService {
 
     @PostConstruct
     public void init() {
-        log.debug("Path to file: {}", pathToFile);
+        log.info("Path to file: {}", pathToFile);
         try {
             Resource resource = resourceLoader.getResource("classpath:" + pathToFile);
             this.events = csvReader.readMarketDataEvents(resource);

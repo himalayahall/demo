@@ -15,7 +15,7 @@ public class ReplaySessionCacheConfig {
     public Cache<String, ReplaySession> sessionCache() {
         return CacheBuilder.newBuilder().expireAfterAccess(30, TimeUnit.MINUTES)
                 .removalListener((RemovalNotification<String, ReplaySession> notification) -> {
-                    log.info("Entry removed: " + notification.getKey() + " -> "
+                    log.trace("Entry removed: " + notification.getKey() + " -> "
                             + notification.getValue().sessionId() + ", Reason: "
                             + notification.getCause());
                 }).build();

@@ -1,8 +1,5 @@
 package com.pragma.demo;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.util.List;
 import org.springframework.boot.SpringApplication;
@@ -17,26 +14,6 @@ public class DemoApplication {
 		// foo();
 		// logJvmArguments();
 		SpringApplication.run(DemoApplication.class, args);
-	}
-
-	public static void foo() {
-		try {
-			Process process = Runtime.getRuntime().exec("java -XX:+PrintFlagsFinal");
-			BufferedReader reader =
-					new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-			String line;
-			while ((line = reader.readLine()) != null) {
-				if (true || line.contains("MaxHeapSize")) {
-					System.out.println(line);
-				}
-			}
-		}
-		catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
 	}
 
 	public static void logJvmArguments() {

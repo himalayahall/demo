@@ -55,7 +55,7 @@ public class ReplaySessionImpl implements ReplaySession {
 
     @Override
     public void start() {
-        log.info("start session: {}", sessionId);
+        log.trace("start session: {}", sessionId);
 
         long startMillis = System.currentTimeMillis();
         isRunning.set(true);
@@ -67,8 +67,7 @@ public class ReplaySessionImpl implements ReplaySession {
                             && events.get(currentIndex.get()).timestamp() <= replayClockMillis) {
                         
                         MarketDataEvent event = events.get(currentIndex.getAndIncrement());
-                        if (log.isDebugEnabled())
-                            log.debug("replay event: {} on session: {}", event, sessionId);
+                        log.trace("replay event: {} on session: {}", event, sessionId);
                         Sinks.EmitResult result = eventSink.tryEmitNext(event);
                         if (result.isFailure()) {
                             log.error("Failed to emit event: {}, session: {}, result: {}", event,
@@ -87,7 +86,7 @@ public class ReplaySessionImpl implements ReplaySession {
                         String fmtDuration = DurationFormatUtils.formatDuration(
                                 Duration.ofMillis(endMillis - startMillis).toMillis(),
                                 "H:mm:ss:SSS");
-                        log.info("Session: {}, started: {}, end: {}, duration: {}", sessionId,
+                        log.trace("Session: {}, started: {}, end: {}, duration: {}", sessionId,
                                 new Date(startMillis), new Date(endMillis), fmtDuration);
                     }
                 });
@@ -95,14 +94,14 @@ public class ReplaySessionImpl implements ReplaySession {
 
     @Override
     public void stop() {
-        log.info("stop session: {}", sessionId);
+        log.trace("stop session: {}", sessionId);
         isRunning.set(false);
         eventSink.tryEmitComplete();
     }
 
     @Override
     public void rewind() {
-        log.info("rewind session: {}", sessionId);
+        log.trace("rewind session: {}", sessionId);
         currentIndex.set(0);
         if (!events.isEmpty())
             this.replayClockMillis = events.get(0).timestamp(); // Reset clock to the first
@@ -114,7 +113,7 @@ public class ReplaySessionImpl implements ReplaySession {
 
     @Override
     public void jumpToEvent(int eventId) {
-        log.info("jump to eventId: {}, session: {}", eventId, sessionId);
+        log.trace("jump to eventId: {}, session: {}", eventId, sessionId);
         for (int i = 0; i < events.size(); i++) {
             if (events.get(i).id() == eventId) {
                 jumpToEventByIndex(i);
@@ -132,7 +131,7 @@ public class ReplaySessionImpl implements ReplaySession {
 
     @Override
     public void forward(int skipCount) {
-        log.info("forward: {}, session: {}", skipCount, sessionId);
+        log.trace("forward: {}, session: {}", skipCount, sessionId);
         int targetIndex = currentIndex.get() + skipCount;
         if (targetIndex >= events.size()) {
             log.warn("forward: {}, session: {} - reached end of events", skipCount, sessionId);
@@ -142,13 +141,13 @@ public class ReplaySessionImpl implements ReplaySession {
 
     @Override
     public void replaySpeed(double replaySpeed) {
-        log.info("set replay speed: {} on session: {}", replaySpeed, sessionId);
+        log.trace("set replay speed: {} on session: {}", replaySpeed, sessionId);
         this.replaySpeed.set(replaySpeed);
     }
 
     @Override
     public Flux<MarketDataEvent> subscribe() {
-        log.info("subscribe to session: {}", sessionId);
+        log.trace("subscribe to session: {}", sessionId);
         return eventFlux;
     }
 
