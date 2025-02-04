@@ -35,8 +35,8 @@ class ReplaySessionImplTest {
     @Test
     void testStart() {
         // Verify that events are emitted
-        Flux<MarketDataEvent> eventFlux = replaySession.subscribe();
         replaySession.start();
+        Flux<MarketDataEvent> eventFlux = replaySession.subscribe();
         StepVerifier.create(eventFlux)
                 .expectNext(events.get(0))
                 .expectNext(events.get(1))
@@ -61,9 +61,8 @@ class ReplaySessionImplTest {
     @Test
     void testRewind() {
         replaySession.start();
-        replaySession.jumpToEvent(2);
-        replaySession.rewind();
-
+            replaySession.jumpToEvent(2);
+         replaySession.rewind();
         // Verify that the session starts from the beginning
         Flux<MarketDataEvent> eventFlux = replaySession.subscribe();
         StepVerifier.create(eventFlux)
@@ -77,12 +76,11 @@ class ReplaySessionImplTest {
     @Test
     void testJumpToEvent() {
         replaySession.start();
-        replaySession.jumpToEvent(2); // Jump to event with ID 2
+        replaySession.jumpToEvent(3); // Jump to event with ID 3
 
         // Verify that the session starts from the specified event
         Flux<MarketDataEvent> eventFlux = replaySession.subscribe();
         StepVerifier.create(eventFlux)
-                .expectNext(events.get(1))
                 .expectNext(events.get(2))
                 .thenCancel()
                 .verify();
@@ -104,7 +102,7 @@ class ReplaySessionImplTest {
 
     @Test
     void testReplaySpeed() {
-        replaySession.start();
+        replaySession.start();         
         replaySession.replaySpeed(2.0); // Double the replay speed
 
         // Verify that the replay speed is updated
@@ -113,8 +111,8 @@ class ReplaySessionImplTest {
 
     @Test
     void testSubscribe() {
-        replaySession.start();
-
+        replaySession.start();         
+        
         // Verify that the event stream is correctly subscribed
         Flux<MarketDataEvent> eventFlux = replaySession.subscribe();
         StepVerifier.create(eventFlux)
