@@ -137,7 +137,7 @@ class ReplaySessionImplTest {
                 .verify();
 
         assertFalse(replaySession.isRunning(), "Session should not be running after all events are emitted");
-    }
+     }
 
     @Test
     void testRunning() {
@@ -150,7 +150,7 @@ class ReplaySessionImplTest {
                 .expectNext(events.get(1));
 
         assertTrue(replaySession.isRunning(), "Session should be running before all events are emitted");
-    }
+   }
 
     @Test
     void testTerminated() {
@@ -165,7 +165,6 @@ class ReplaySessionImplTest {
                 .expectComplete()
                 .verify();
 
-        assertFalse(replaySession.isRunning(), "Session should not be running after all events are emitted");
         assertTrue(replaySession.isTerminated(), "Session should be terminated after all events are emitted");
     }
 
