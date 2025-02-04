@@ -14,7 +14,7 @@ import marimo as mo
 
 ## Tech Stack
 
-- Java, Spring Boot, Spring WebFlux, Google Guava (cache), Gradle, JUnit, Mockito, VS Code
+- Java, Spring Boot, Spring WebFlux, Google Guava (cache), Gradle, JUnit, Mockito, Marimo (Jupyter replacement) for documentation and automated performance testing, VS Code
 
 ## Assumptions
 
@@ -53,7 +53,7 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 ### Functional
 
 1. Stream market data events to Web clients.
-2. Allow multiple clients - i.e. mujst support concurrent replay sessions.
+2. Allow multiple clients - i.e. must support concurrent replay sessions.
 3. Clients should be able to control replay sessions by sending the following commands:
     - **Create** replay session.
     - **Start** & **Stop** session.
@@ -66,11 +66,11 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 
 1. **Performance**
     - **Throughput** -  replay at sustained high throughput (up to 3000 events/sec).
-    - **Scale** - support large number of clients (0, 100) without throughput degradation.
+    - **Scale** - support large number of clients [1, 100] without service degradation.
    - **Stability**
-2. **Design Quality** - design should be easy to understand and to update.
+2. **Design Quality** - design should be easy to understand and update.
 3. **Code Quality** - code should be production quality with good documentation.
-4. **Testing** - implementation should be easily testable and performance claims should be backed by evidence.
+4. **Testing** - implementation should be easily testable, have test scaffolding, and performance claims should be backed by evidence.
 <!---->
 ## Design decisions
 
@@ -180,7 +180,7 @@ Replay service can be tested manually or via automation.
 
 > - Once a session has completed playing the **full** market data stream, it is automatically **terminated**. Terminated sessions **cannot be restarted**. However, while a session is midstream, it may freely be stopped, restarted, rewound, forwarded, speed changed up/down, jumped to specific event.
 
-> [Create](#create-session) a brand new session and [start](#start-session) it. Before it finishes [stop](#stop-session).
+> [Create](#create-session) a brand new session and [start](#start-session) it. [Stop](#stop-session) the session befoe it completes.
 
   <a id="rewind-session"></a>
   8. Rewind session
@@ -484,10 +484,7 @@ Baseline testcase is a single client running at replay `speed = 1.0` - it takes 
 
 A single client running at replay `speed = 1000.0` received all events in `00:00:00:544`, which works out to roughly 6000 events/sec.
 
-However, with larger number of clients running at higher speeds, performance is impacted. Latency growth is **linear** for $clients \gt\ 100$. Still, the server continues to be functional and satisfy design requirements. 
-
-See [performance latency plot](https://github.com/himalayahall/demo/blob/01cb141736dc521652c7aa6685c080ac31d9e7e7/src/main/marimo/performance.png).
-
+At much higher speeds and with large number of clients, performance is impacted. Growth in **linear** is linear for $clients \gt\ 100$. However, even under these conditions, the server is operational and satisfies functional requirements. 
 
 | # Sessions | Replay Speed | Duration <br> `hh:mm:ss:zzz`|
 |------------|--------------|--------------|
@@ -503,6 +500,8 @@ See [performance latency plot](https://github.com/himalayahall/demo/blob/01cb141
 | 400        | 10           | 00:00:22:156 |
 | 500        | 10           | 00:00:25:950 |
 | 600        | 10           | 00:00:32:068 |
+
+![performance latency plot](https://github.com/himalayahall/demo/blob/01cb141736dc521652c7aa6685c080ac31d9e7e7/src/main/marimo/performance.png)
 
 ```{.python.marimo}
 import pandas as pd
@@ -534,7 +533,8 @@ plt.show()
 
 - Run replay server and client on separate machines.
 - Make sure network interfaces on test machines have sufficient performance.
-- Carefully tune JVM and dependent libraries. Use a binary wire encoding like Google Proto to cut down network traffic.
+- Carefully tune JVM, dependent libraries, frameworks.
+- Use a binary wire encoding like Google Proto to cut down network traffic.
 - Cache large datasets in a distributed cache like Redis.
 - Horizontal scaling -> launch additional replay server processes with a Load Balancer to fan out traffic among the servers. Sticky connections would pin client traffic to the same server.
 
