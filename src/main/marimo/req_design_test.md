@@ -66,11 +66,11 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 
 1. **Performance**
     - **Throughput** -  replay at sustained high throughput (up to 3000 events/sec).
-    - **Scale** - support large number of clients (0, 100) without throughput degradation.
+    - **Scale** - support large number of clients [0, 100] without performance degradation.
    - **Stability**
 2. **Design Quality** - design should be easy to understand and to update.
 3. **Code Quality** - code should be production quality with good documentation.
-4. **Testing** - implementation should be easily testable and performance claims should be backed by evidence.
+4. **Testing** - implementation should be easily testable, congtain test scaffolding, and performance claims should be backed by evidence.
 <!---->
 ## Design decisions
 
@@ -80,12 +80,14 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 - **Session cache** - sessions are stored in Google Guava cache, **stale** sessions are ejected after a configurable timeout in `application.properties`. Default cache cofiguration is `1 HOUR`.
 - **Sliding window** -> virtual sliding window moves over cached events, during each publishing cycle ALL events under sliding window are published. Sliding window and event publication controls are set through `application.properties`:
 
-    - **publishTimerMillis** ->  controls how often the sliding window is moved, default: `1 millisecond`.
-    - **replayClockMillis** -> tracks how far time has progressed in a replay session. Controls the sliding window size. When a sessikon is `created` or `rewound` the session `replayClockMillis` is initialized to timestamp of the first data event. At each publishing cycle all `unpublished` events with $timestamp \leq replayClockMillis$ are published and then `replayClockMillis` is set to $replayClockMillis + (replaySpeed \times publishTimerMillis$).
+    - **publishTimerMillis** -  controls how often the sliding window is moved, default: `1 millisecond`.
+    - **replayClockMillis** - tracks how far time has progressed in a replay session. Controls the sliding window size. When a sessikon is `created` or `rewound` the session `replayClockMillis` is initialized to timestamp of the first data event. At each publishing cycle all `unpublished` events with $timestamp \leq replayClockMillis$ are published and then `replayClockMillis` is set to $replayClockMillis + (replaySpeed \times publishTimerMillis$).
 
-  - **replaySpeed** -> controls how fast the replay clock advances. For example, suppose  $publishTimerMillis =  1$ and $replaySpeed = 1.0$. During each publishing cycle `replayClockMillis` will advance by $replaySpeed \times publishTimerMillis$.
+  - **replaySpeed** - controls how fast the replay clock advances. For example, suppose  $publishTimerMillis =  1$ and $replaySpeed = 1.0$. During each publishing cycle `replayClockMillis` will advance by $replaySpeed \times publishTimerMillis$.
 
     Suppose `replaySpeed` is bumped up to `2.0`. During next publishing cycle `replayClockMillis` will advance by `2 milliseconds`, even though `1 millisecond` has passed on the system clock ($publishTimerMillis = 1$). This works both for speeding up ($replaySpeed \gt 1.0$) and slowing down ($replaySpeed \lt 1.0)$ replay.
+
+  - Automated performance testing - taking a page out the guidebook on best practices in data science, use a Notebook infrastructure for documenting the implementation and for automated performance testing. This brings together the documentation (installation, API usage, etc.), manual testing guidelines via RESTful API, and automated testing via Python in a unified document. This document you are reading was exported from the [Marimo](https://marimo.io) Notebook. Marimo is a [Jupyter](https://jupyter.org) alternative, purpose built as a git-friendly dev environment.
 <!---->
 ## Key classes
 - **MarketDataController** - entry point for the REST API.
@@ -200,9 +202,7 @@ Replay service can be tested manually or via automation.
 
 Manual testing works fine but it is cumbersome for runing lots of experiments. Manully testing streaming to hundreds of concurrent clients is not easy to accomplish.
 
-A great way to accomplish this is through a Notebook, e.g. [Jupyter](https://jupyter.org). In fact, the document you are reading is a [Marimo](https://marimo.io) Notebook. Marimo is a Jupyter alternative, purpose built as a git-friendly dev environment.
-
-[Performance](#performance) tests (see below) were conducted using this Marimo Notebook.
+A great way to accomplish this is through a Notebook. [Performance](#performance) tests (see below) were conducted using this [Marimo](https://marimo.io) Notebook.
 
 #### Disable logging
 
