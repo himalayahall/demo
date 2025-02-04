@@ -90,6 +90,9 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 =======
     Suppose `replaySpeed` is bumped up to `2.0`. During next publishing cycle `replayClockMillis` will advance by `2 milliseconds`, even though `1 millisecond` has passed on the system clock ($publishTimerMillis = 1$). This works both for speeding up ($replaySpeed \gt 1.0$) and slowing down ($replaySpeed \lt 1.0)$ replay.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> 9e53abb67c5338cac6a2f575754d0e48c00ccb8a
 >>>>>>> Stashed changes
@@ -113,6 +116,12 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 ## Replay service installation
   - Prerequisites - Java (17 or higher), Java IDE (VSCode, IntelliJ, Eclipse).
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+  - Clone [repository](https://github.com/himalayahall/demo).
+=======
+>>>>>>> Stashed changes
 =======
 <<<<<<< HEAD
   - Clone [repository](https://github.com/himalayahall/demo).
