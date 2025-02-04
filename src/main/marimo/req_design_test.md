@@ -484,9 +484,6 @@ Baseline testcase is a single client running at replay `speed = 1.0` - it takes 
 
 A single client running at replay `speed = 1000.0` received all events in `00:00:00:544`, which works out to roughly 6000 events/sec.
 
-However, with larger number of clients running at higher speeds, performance is impacted. Latency growth is **linear** for $clients \gt\ 100$. Still, the server continues to be functional and satisfy design requirements. See latency plot below.
-
-
 | # Sessions | Replay Speed | Duration <br> `hh:mm:ss:zzz`|
 |------------|--------------|--------------|
 | 1          | 1            | 00:01:58:195 |
@@ -501,6 +498,8 @@ However, with larger number of clients running at higher speeds, performance is 
 | 400        | 10           | 00:00:22:156 |
 | 500        | 10           | 00:00:25:950 |
 | 600        | 10           | 00:00:32:068 |
+
+![performance latency plot](https://github.com/himalayahall/demo/blob/01cb141736dc521652c7aa6685c080ac31d9e7e7/src/main/marimo/performance.png)
 
 ```{.python.marimo}
 import pandas as pd
