@@ -119,8 +119,54 @@ class ReplaySessionImplTest {
                 .expectNext(events.get(0))
                 .expectNext(events.get(1))
                 .expectNext(events.get(2))
-                .thenCancel()
+                .expectComplete()                
                 .verify();
+    }
+
+    @Test
+    void testNotRunning() {
+        replaySession.start();         
+        
+        // Verify that the event stream is correctly subscribed
+        Flux<MarketDataEvent> eventFlux = replaySession.subscribe();
+        StepVerifier.create(eventFlux)
+                .expectNext(events.get(0))
+                .expectNext(events.get(1))
+                .expectNext(events.get(2))
+                .expectComplete()
+                .verify();
+
+        assertFalse(replaySession.isRunning(), "Session should not be running after all events are emitted");
+    }
+
+    @Test
+    void testRunning() {
+        replaySession.start();
+
+        // Verify that the event stream is correctly subscribed
+        Flux<MarketDataEvent> eventFlux = replaySession.subscribe();
+        StepVerifier.create(eventFlux)
+                .expectNext(events.get(0))
+                .expectNext(events.get(1));
+
+        assertTrue(replaySession.isRunning(), "Session should be running before all events are emitted");
+    }
+
+    @Test
+    void testTerminated() {
+        replaySession.start();
+
+        // Verify that the event stream is correctly subscribed
+        Flux<MarketDataEvent> eventFlux = replaySession.subscribe();
+        StepVerifier.create(eventFlux)
+                .expectNext(events.get(0))
+                .expectNext(events.get(1))
+                .expectNext(events.get(2))               
+                .expectComplete()
+                .verify();
+
+        assertFalse(replaySession.isRunning(), "Session should not be running after all events are emitted");
+        assertTrue(replaySession.isTerminated(), "Session should be terminated after all events are emitted");
     }
 
     @Test

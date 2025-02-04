@@ -98,14 +98,17 @@ public class ReplaySessionImpl implements ReplaySession {
                         log.trace("Completing eventSink for session: {}", sessionId);
                         eventSink.tryEmitComplete();
 
+                        isRunning.set(false);
                         isTerminated.set(true);
 
-                        long endMillis = System.currentTimeMillis();
-                        String fmtDuration = DurationFormatUtils.formatDuration(
-                                Duration.ofMillis(endMillis - startMillis).toMillis(),
-                                "H:mm:ss:SSS");
-                        log.trace("Session: {}, started: {}, end: {}, duration: {}", sessionId,
-                                new Date(startMillis), new Date(endMillis), fmtDuration);
+                        if (log.isTraceEnabled()) {
+                            long endMillis = System.currentTimeMillis();
+                            String fmtDuration = DurationFormatUtils.formatDuration(
+                                    Duration.ofMillis(endMillis - startMillis).toMillis(),
+                                    "H:mm:ss:SSS");
+                            log.trace("Session: {}, started: {}, end: {}, duration: {}", sessionId,
+                                    new Date(startMillis), new Date(endMillis), fmtDuration);
+                        }
                     }
                 });
     }
@@ -147,7 +150,7 @@ public class ReplaySessionImpl implements ReplaySession {
 
         log.trace("jump to eventId: {}, session: {}", eventId, sessionId);
 
-        // TODO: inefficient linear scan
+        // TODO: inefficient scan
         for (int i = 0; i < events.size(); i++) {
             if (events.get(i).id() == eventId) {
                 jumpToEventByIndex(i);
@@ -155,12 +158,6 @@ public class ReplaySessionImpl implements ReplaySession {
             }
         }
         throw new ReplayException(String.format("Invalid event ID:: {}", eventId));
-    }
-
-    private void jumpToEventByIndex(int index) {
-        currentIndex.set(index);
-        if (index < events.size())
-            replayClockMillis = events.get(index).timestamp();
     }
 
     @Override
@@ -173,8 +170,17 @@ public class ReplaySessionImpl implements ReplaySession {
         int targetIndex = currentIndex.get() + skipCount;
         if (targetIndex >= events.size()) {
             log.trace("forward: {}, session: {} - reached end of events", skipCount, sessionId);
+            jumpToEventByIndex(events.size());
         }
-        jumpToEventByIndex(targetIndex);
+        else {
+            jumpToEventByIndex(targetIndex);
+        }
+    }
+
+    private void jumpToEventByIndex(int index) {
+        currentIndex.set(index);
+        if (index < events.size())
+            replayClockMillis = events.get(index).timestamp();
     }
 
     @Override
