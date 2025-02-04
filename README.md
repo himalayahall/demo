@@ -9,12 +9,12 @@ auto_download:
 ```{.python.marimo}
 import marimo as mo
 ```
- 
+
 # Market Data Simulator
 
 ## Tech Stack
 
-- Java, Spring Boot, Spring WebFlux, Google Guava (cache), Gradle, JUnit, Mockito, Marimo (Jupyter replacement) for documentation and automated performance testing, VS Code
+- Java, Spring Boot, Spring WebFlux, Google Guava (cache), Gradle, JUnit, Mockito, VS Code
 
 ## Assumptions
 
@@ -53,7 +53,7 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 ### Functional
 
 1. Stream market data events to Web clients.
-2. Allow multiple clients - i.e. must support concurrent replay sessions.
+2. Allow multiple clients - i.e. mujst support concurrent replay sessions.
 3. Clients should be able to control replay sessions by sending the following commands:
     - **Create** replay session.
     - **Start** & **Stop** session.
@@ -66,11 +66,11 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 
 1. **Performance**
     - **Throughput** -  replay at sustained high throughput (up to 3000 events/sec).
-    - **Scale** - support large number of clients [1, 100] without service degradation.
+    - **Scale** - support large number of clients [0, 100] without performance degradation.
    - **Stability**
-2. **Design Quality** - design should be easy to understand and update.
+2. **Design Quality** - design should be easy to understand and to update.
 3. **Code Quality** - code should be production quality with good documentation.
-4. **Testing** - implementation should be easily testable, have test scaffolding, and performance claims should be backed by evidence.
+4. **Testing** - implementation should be easily testable, congtain test scaffolding, and performance claims should be backed by evidence.
 <!---->
 ## Design decisions
 
@@ -80,12 +80,14 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 - **Session cache** - sessions are stored in Google Guava cache, **stale** sessions are ejected after a configurable timeout in `application.properties`. Default cache cofiguration is `1 HOUR`.
 - **Sliding window** -> virtual sliding window moves over cached events, during each publishing cycle ALL events under sliding window are published. Sliding window and event publication controls are set through `application.properties`:
 
-    - **publishTimerMillis** ->  controls how often the sliding window is moved, default: `1 millisecond`.
-    - **replayClockMillis** -> tracks how far time has progressed in a replay session. Controls the sliding window size. When a sessikon is `created` or `rewound` the session `replayClockMillis` is initialized to timestamp of the first data event. At each publishing cycle all `unpublished` events with $timestamp \leq replayClockMillis$ are published and then `replayClockMillis` is set to $replayClockMillis + (replaySpeed \times publishTimerMillis$).
+    - **publishTimerMillis** -  controls how often the sliding window is moved, default: `1 millisecond`.
+    - **replayClockMillis** - tracks how far time has progressed in a replay session. Controls the sliding window size. When a sessikon is `created` or `rewound` the session `replayClockMillis` is initialized to timestamp of the first data event. At each publishing cycle all `unpublished` events with $timestamp \leq replayClockMillis$ are published and then `replayClockMillis` is set to $replayClockMillis + (replaySpeed \times publishTimerMillis$).
 
-  - **replaySpeed** -> controls how fast the replay clock advances. For example, suppose  $publishTimerMillis =  1$ and $replaySpeed = 1.0$. During each publishing cycle `replayClockMillis` will advance by $replaySpeed \times publishTimerMillis$.
+  - **replaySpeed** - controls how fast the replay clock advances. For example, suppose  $publishTimerMillis =  1$ and $replaySpeed = 1.0$. During each publishing cycle `replayClockMillis` will advance by $replaySpeed \times publishTimerMillis$.
 
     Suppose `replaySpeed` is bumped up to `2.0`. During next publishing cycle `replayClockMillis` will advance by `2 milliseconds`, even though `1 millisecond` has passed on the system clock ($publishTimerMillis = 1$). This works both for speeding up ($replaySpeed \gt 1.0$) and slowing down ($replaySpeed \lt 1.0)$ replay.
+
+  - Automated performance testing - taking a page out the guidebook on best practices in data science, use a Notebook infrastructure for documenting the implementation and for automated performance testing. This brings together the documentation (installation, API usage, etc.), manual testing guidelines via RESTful API, and automated testing via Python in a unified document. This document you are reading was exported from the [Marimo](https://marimo.io) Notebook. Marimo is a [Jupyter](https://jupyter.org) alternative, purpose built as a git-friendly dev environment.
 <!---->
 ## Key classes
 - **MarketDataController** - entry point for the REST API.
@@ -102,13 +104,13 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 - `Unit tests` are used to test  functionality of the replay service including Start, Stop, Set Replay Speed, Rewind (Reset), Forward, Jump to Event. `Mocks` are used for markeyt data events.
 <!---->
 ## Replay service installation
-  - Prerequisites - Java (17 or higher), IDE (VSCode, IntelliJ, Eclipse).
+  - Prerequisites - Java (17 or higher), Java IDE (VSCode, IntelliJ, Eclipse).
   - Clone project.
 <!---->
 ### Running
 
 - Load project in VSCode (or another IDE).
-- Open terminal inside VSCode for viewing replay service logs.
+- Open terminal inside VSCode for view replay service logs.
 - Run application from VSCode.
 - On successful launch below logs will be rendered.
 -----
@@ -137,7 +139,7 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 
 RESTful API can be used in the usual ways. Below are 2 no-code ways of using tthe API:
 
-  1. **Spring OpenAPI**  interface is baked into the application. To use this interface - [start](#running) replay service and then go to http://localhost:8080/swagger-ui.html.
+  1. **Spring OpenAPI**  interface is baked into the application. To use this interface - [run the application](#running) and then go to http://localhost:8080/swagger-ui.html.
 
   2. Use [curl](https://curl.se) to access the API. For example, execute `curl -X GET http://localhost:8080/session/subscribe/e8cc93be-3723-4c37-8681-b3fa6d3b7a79` from a terminal to subscribe for events on session
 `e8cc93be-3723-4c37-8681-b3fa6d3b7a79`.
@@ -152,7 +154,7 @@ Replay service can be tested manually or via automation.
 
      > - In *application.properties*, locate `logging.level.com.pragma.demo=INFO` and replace it with `logging.level.com.pragma.demo=TRACE`. This will enable TRACE level logging which will be come in handy for manual testing.
 
-  3. [Start](#running) replay service.
+  3. [Start replay service](#installation).
   4. Go to http://localhost:8080/swagger-ui.html.
 
 <a id="create-session"></a>
@@ -180,7 +182,7 @@ Replay service can be tested manually or via automation.
 
 > - Once a session has completed playing the **full** market data stream, it is automatically **terminated**. Terminated sessions **cannot be restarted**. However, while a session is midstream, it may freely be stopped, restarted, rewound, forwarded, speed changed up/down, jumped to specific event.
 
-> [Create](#create-session) a brand new session and [start](#start-session) it. [Stop](#stop-session) the session befoe it completes.
+> [Create](#create-session) a brand new session and [start](#start-session) it. Before it finishes [stop](#stop-session).
 
   <a id="rewind-session"></a>
   8. Rewind session
@@ -194,15 +196,13 @@ Replay service can be tested manually or via automation.
 
   10. [Start](#start-session) the replay session. Events will start streaming at the new speed. When this replay session finishes take a look at the service log tail. Replay **duration** should be approximately *half* the previous replay session since the stream was replayed at *twice* the normal speed.
 
-  11. One final test to get a sense of the raw performance of replay server. First, [create](#create-session) a new replay session. Then [set](#change-replay-speed) replay speed for the new session to a very large value, e.g. `1000.0`. Finally, [start](#start-session) the session. When this replay session finishes take a look the service log tail. Replay duration will be a much smaller number!
+  11. One final test to get a sense of the raw performance of replay server. First, [create](#create-session) a new replay session. Then [set](#change-replay-speed) replay speed for the new session to a large value, e.g. `1000.0`. Finally, [start](#start-session) the session. When this replay session finishes take a look the service log tail. Replay duration will be a much smaller number!
 <!---->
 ### Automation recipe for kicking the tires
 
 Manual testing works fine but it is cumbersome for runing lots of experiments. Manully testing streaming to hundreds of concurrent clients is not easy to accomplish.
 
-A great way to accomplish this is through a Notebook, e.g. [Jupyter](https://jupyter.org). In fact, the document you are reading is a [Marimo](https://marimo.io) Notebook. Marimo is a Jupyter alternative, purpose built as a git-friendly dev environment.
-
-[Performance](#performance) tests (see below) were conducted using this Marimo Notebook.
+A great way to accomplish this is through a Notebook. [Performance](#performance) tests (see below) were conducted using this [Marimo](https://marimo.io) Notebook.
 
 #### Disable logging
 
@@ -465,7 +465,7 @@ for speed_session in sessions:
 
 #### Start replay sessions and subscribe to event streams.
 
-This could be a long-running operation, a timer on right side of cell shows progress. Below the cell will be output of completion logs from sessions. Note, log from last completing session will overwite previous output. Sine REST call are made asynchronously, it is possible that the log from a long running session is overwritten by the log from a shorter session.
+This could be a long-running operation, a timer on right side of cell shows progress. Below the cell will be output of completion logs from sessions. Note, log from last completing session will overwite previous output. Since REST calls are made asynchronously, it is possible that logs from long running sessions are overwritten by logs from shorter sessions.
 
 ```{.python.marimo}
 for start_session in sessions:
@@ -483,8 +483,6 @@ Since testing was done using `localhost` (bypassing the physical network) there 
 Baseline testcase is a single client running at replay `speed = 1.0` - it takes roughly `2 minutes` to publish all data events. With `[1, 10,100, 1000]` clients running at `speed = 1.0`, there is no performance impact.
 
 A single client running at replay `speed = 1000.0` received all events in `00:00:00:544`, which works out to roughly 6000 events/sec.
-
-At much higher speeds and with large number of clients, performance is impacted. Growth in **linear** is linear for $clients \gt\ 100$. However, even under these conditions, the server is operational and satisfies functional requirements. 
 
 | # Sessions | Replay Speed | Duration <br> `hh:mm:ss:zzz`|
 |------------|--------------|--------------|
@@ -533,8 +531,7 @@ plt.show()
 
 - Run replay server and client on separate machines.
 - Make sure network interfaces on test machines have sufficient performance.
-- Carefully tune JVM, dependent libraries, frameworks.
-- Use a binary wire encoding like Google Proto to cut down network traffic.
+- Carefully tune JVM and dependent libraries. Use a binary wire encoding like Google Proto to cut down network traffic.
 - Cache large datasets in a distributed cache like Redis.
 - Horizontal scaling -> launch additional replay server processes with a Load Balancer to fan out traffic among the servers. Sticky connections would pin client traffic to the same server.
 
