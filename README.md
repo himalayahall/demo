@@ -85,7 +85,14 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 
   - **replaySpeed** - controls how fast the replay clock advances. For example, suppose  $publishTimerMillis =  1$ and $replaySpeed = 1.0$. During each publishing cycle `replayClockMillis` will advance by $replaySpeed \times publishTimerMillis$.
 
+<<<<<<< HEAD
+    Suppose `replaySpeed` is bumped up to `2.0`. During the next publishing cycle `replayClockMillis` will advance  $2.0 \times publishTimerMillis$ milliseconds. Using default replay settings,  `replayClockMillis` will advance `2 milliseconds` for each `1 millisecond` advance of the system clock. This works both for speeding up ($replaySpeed \gt 1.0$) and slowing down ($replaySpeed \lt 1.0)$ replay.
+=======
     Suppose `replaySpeed` is bumped up to `2.0`. During next publishing cycle `replayClockMillis` will advance by `2 milliseconds`, even though `1 millisecond` has passed on the system clock ($publishTimerMillis = 1$). This works both for speeding up ($replaySpeed \gt 1.0$) and slowing down ($replaySpeed \lt 1.0)$ replay.
+<<<<<<< Updated upstream
+=======
+>>>>>>> 9e53abb67c5338cac6a2f575754d0e48c00ccb8a
+>>>>>>> Stashed changes
 
   - Automated performance testing - taking a page out the guidebook on best practices in data science, use a Notebook infrastructure for documenting the implementation and for automated performance testing. This brings together the documentation (installation, API usage, etc.), manual testing guidelines via RESTful API, and automated testing via Python in a unified document. This document you are reading was exported from the [Marimo](https://marimo.io) Notebook. Marimo is a [Jupyter](https://jupyter.org) alternative, purpose built as a git-friendly dev environment.
 <!---->
@@ -101,11 +108,18 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 <!---->
 ## Unit Testing
 
-- `Unit tests` are used to test  functionality of the replay service including Start, Stop, Set Replay Speed, Rewind (Reset), Forward, Jump to Event. `Mocks` are used for markeyt data events.
+- `Unit tests` are used to test  functionality of the replay service including Start, Stop, Set Replay Speed, Rewind (Reset), Forward, Jump to Event. `Mocks` are used for market data events.
 <!---->
 ## Replay service installation
   - Prerequisites - Java (17 or higher), Java IDE (VSCode, IntelliJ, Eclipse).
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+  - Clone [repository](https://github.com/himalayahall/demo).
+=======
+>>>>>>> Stashed changes
   - Clone project.
+>>>>>>> 9e53abb67c5338cac6a2f575754d0e48c00ccb8a
 <!---->
 ### Running
 
