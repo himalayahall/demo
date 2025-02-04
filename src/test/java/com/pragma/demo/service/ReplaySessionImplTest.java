@@ -41,7 +41,7 @@ class ReplaySessionImplTest {
                 .expectNext(events.get(0))
                 .expectNext(events.get(1))
                 .expectNext(events.get(2))
-                .thenCancel() // Cancel to avoid infinite stream
+                .thenCancel()
                 .verify();
     }
 
@@ -61,6 +61,7 @@ class ReplaySessionImplTest {
     @Test
     void testRewind() {
         replaySession.start();
+        replaySession.jumpToEvent(2);
         replaySession.rewind();
 
         // Verify that the session starts from the beginning
@@ -81,8 +82,8 @@ class ReplaySessionImplTest {
         // Verify that the session starts from the specified event
         Flux<MarketDataEvent> eventFlux = replaySession.subscribe();
         StepVerifier.create(eventFlux)
-                .expectNext(events.get(1)) // Event with ID 2
-                .expectNext(events.get(2)) // Next event
+                .expectNext(events.get(1))
+                .expectNext(events.get(2))
                 .thenCancel()
                 .verify();
     }
@@ -90,13 +91,13 @@ class ReplaySessionImplTest {
     @Test
     void testForward() {
         replaySession.start();
-        replaySession.forward(1); // Skip 1 event
+        replaySession.forward(1);
 
         // Verify that the session skips the specified number of events
         Flux<MarketDataEvent> eventFlux = replaySession.subscribe();
         StepVerifier.create(eventFlux)
-                .expectNext(events.get(1)) // Skipped first event
-                .expectNext(events.get(2)) // Next event
+                .expectNext(events.get(1))
+                .expectNext(events.get(2))
                 .thenCancel()
                 .verify();
     }
