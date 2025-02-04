@@ -124,7 +124,9 @@ def _(mo):
             - **ReplaySessionImpl** - default implementation of ReplaySession.
         - **MarketDataEvent** - market data record (data model).
         - **CSVReaderService** - CSV reader service interface
+      
               - **JacksonCSVReader** - Jackson implementation (default).
+      
               - **ApacheCSVReaderService** - Apache Commons implementation. Tried this first but the API was *messy* (deprecated API, dealing with BOM was cumbersome).
         """
     )
@@ -193,7 +195,7 @@ def _(mo):
         ## RESTful API 
 
         ### Documentation
-        - Static (may be out of data with latest changes) OpenAPI Documentation can be found [here](https://github.com/himalayahall/demo/blob/5bbd1c5971250a09ce0872e3b4562cf2fa36e17a/api-documentation.pdf).
+        - Static (may be stale) OpenAPI Documentation can be found [here](https://github.com/himalayahall/demo/blob/5bbd1c5971250a09ce0872e3b4562cf2fa36e17a/api-documentation.pdf).
         """
     )
     return
