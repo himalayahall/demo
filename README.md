@@ -66,11 +66,11 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 
 1. **Performance**
     - **Throughput** -  replay at sustained high throughput (up to 3000 events/sec).
-    - **Scale** - support large number of clients (0, 100) without throughput degradation.
+    - **Scale** - support large number of clients [1, 100] without service degradation.
    - **Stability**
 2. **Design Quality** - design should be easy to understand and update.
 3. **Code Quality** - code should be production quality with good documentation.
-4. **Testing** - implementation should be easily testable and performance claims should be backed by evidence.
+4. **Testing** - implementation should be easily testable, have test scaffolding, and performance claims should be backed by evidence.
 <!---->
 ## Design decisions
 
