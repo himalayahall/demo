@@ -62,11 +62,12 @@ public class ReplaySessionImpl implements ReplaySession {
 
     @Override
     public void start() {
-        log.trace("start session: {}, subscriber count: {}", sessionId, eventSink.currentSubscriberCount());
-
         if (isTerminated.get()) {
             throw new ReplayException("Session is already terminated: " + sessionId);
         }
+
+        log.trace("start session: {}, subscriber count: {}", sessionId,
+                eventSink.currentSubscriberCount());
 
         long startMillis = System.currentTimeMillis();
         isRunning.set(true);
@@ -111,12 +112,20 @@ public class ReplaySessionImpl implements ReplaySession {
 
     @Override
     public void stop() {
+        if (isTerminated.get()) {
+            throw new ReplayException("Session is already terminated: " + sessionId);
+        }
+
         log.trace("stop session: {}", sessionId);
         isRunning.set(false);
     }
 
     @Override
     public void rewind() {
+        if (isTerminated.get()) {
+            throw new ReplayException("Session is already terminated: " + sessionId);
+        }
+
         log.trace("rewind session: {}", sessionId);
         doRewind();
     }
@@ -132,7 +141,13 @@ public class ReplaySessionImpl implements ReplaySession {
 
     @Override
     public void jumpToEvent(int eventId) {
+        if (isTerminated.get()) {
+            throw new ReplayException("Session is already terminated: " + sessionId);
+        }
+
         log.trace("jump to eventId: {}, session: {}", eventId, sessionId);
+
+        // TODO: inefficient linear scan
         for (int i = 0; i < events.size(); i++) {
             if (events.get(i).id() == eventId) {
                 jumpToEventByIndex(i);
@@ -150,22 +165,34 @@ public class ReplaySessionImpl implements ReplaySession {
 
     @Override
     public void forward(int skipCount) {
+        if (isTerminated.get()) {
+            throw new ReplayException("Session is already terminated: " + sessionId);
+        }
+
         log.trace("forward: {}, session: {}", skipCount, sessionId);
         int targetIndex = currentIndex.get() + skipCount;
         if (targetIndex >= events.size()) {
-            log.warn("forward: {}, session: {} - reached end of events", skipCount, sessionId);
+            log.trace("forward: {}, session: {} - reached end of events", skipCount, sessionId);
         }
         jumpToEventByIndex(targetIndex);
     }
 
     @Override
     public void replaySpeed(double replaySpeed) {
+        if (isTerminated.get()) {
+            throw new ReplayException("Session is already terminated: " + sessionId);
+        }
+
         log.trace("set replay speed: {} on session: {}", replaySpeed, sessionId);
         this.replaySpeed.set(replaySpeed);
     }
 
     @Override
     public Flux<MarketDataEvent> subscribe() {
+        if (isTerminated.get()) {
+            throw new ReplayException("Session is already terminated: " + sessionId);
+        }
+
         log.trace("subscribe to session: {}", sessionId);
         return eventFlux;
     }

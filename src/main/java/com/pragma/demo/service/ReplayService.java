@@ -86,7 +86,7 @@ public class ReplayService {
         if (session.isPresent()) {
             ReplaySession sess = session.get();
             if (sess.isTerminated()) {
-                log.trace(sessionId + " is terminated. Create a new session.");
+                log.trace("{sessionId} is terminated. Create a new session.", sessionId);
                 throw new ReplayException("Session is terminated. Cannot start.");
             }
             session.get().start();

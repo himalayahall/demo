@@ -18,15 +18,14 @@ public class ReplaySessionCacheConfig {
 
     @Value("${cache.expiry.unit}")
     private TimeUnit expiryUnit;
-    
+
     @Bean
     public Cache<String, ReplaySession> sessionCache() {
         log.info("Creating cache with expiry duration: {expiryDuration} {expiryUnit}");
         return CacheBuilder.newBuilder().expireAfterAccess(expiryDuration, expiryUnit)
                 .removalListener((RemovalNotification<String, ReplaySession> notification) -> {
-                    log.trace("Entry removed: " + notification.getKey() + " -> "
-                            + notification.getValue().sessionId() + ", Reason: "
-                            + notification.getCause());
+                    log.trace("Entry removed: {}, Reason: {}", notification.getKey(),
+                            notification.getCause());
                 }).build();
     }
 }
