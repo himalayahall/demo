@@ -107,7 +107,7 @@ def _(mo):
 
             Suppose `replaySpeed` is bumped up to `2.0`. During next publishing cycle `replayClockMillis` will advance by `2 milliseconds`, even though `1 millisecond` has passed on the system clock ($publishTimerMillis = 1$). This works both for speeding up ($replaySpeed \gt 1.0$) and slowing down ($replaySpeed \lt 1.0)$ replay.
 
-          - Automated performance testing - taking a page out the guidebook on best practices in data science, use a Notebook infrastructure for documenting the implementation and for automated performance testing. This brings together the documentation (installation, API usage, etc.), manual testing guidelines via RESTful API, and automated testing via Python in a unified document. This document you are reading was exported from the [Marimo](https://marimo.io) Notebook. Marimo is a [Jupyter](https://jupyter.org) alternative, purpose built as a git-friendly dev environment. 
+          - Automated performance testing - taking a page out the guidebook on best practices in data science, use a Notebook infrastructure for documenting the implementation and for automated performance testing. This brings together the documentation (installation, API usage, etc.), manual testing guidelines via RESTful API, and automated testing via Python in a unified document. This document you are reading was exported from the [Marimo](https://marimo.io) Notebook. Marimo is a [Jupyter](https://jupyter.org) alternative, purpose built as a git-friendly dev environment.
         """
     )
     return
@@ -272,7 +272,7 @@ def _(mo):
 
           10. [Start](#start-session) the replay session. Events will start streaming at the new speed. When this replay session finishes take a look at the service log tail. Replay **duration** should be approximately *half* the previous replay session since the stream was replayed at *twice* the normal speed.
 
-          11. One final test to get a sense of the raw performance of replay server. First, [create](#create-session) a new replay session. Then [set](#change-replay-speed) replay speed for the new session to a very large value, e.g. `1000.0`. Finally, [start](#start-session) the session. When this replay session finishes take a look the service log tail. Replay duration will be a much smaller number!
+          11. One final test to get a sense of the raw performance of replay server. First, [create](#create-session) a new replay session. Then [set](#change-replay-speed) replay speed for the new session to a large value, e.g. `1000.0`. Finally, [start](#start-session) the session. When this replay session finishes take a look the service log tail. Replay duration will be a much smaller number!
         """
     )
     return
@@ -604,7 +604,7 @@ def _(mo):
         """
         #### Start replay sessions and subscribe to event streams. 
 
-        This could be a long-running operation, a timer on right side of cell shows progress. Below the cell will be output of completion logs from sessions. Note, log from last completing session will overwite previous output. Sine REST call are made asynchronously, it is possible that the log from a long running session is overwritten by the log from a shorter session.
+        This could be a long-running operation, a timer on right side of cell shows progress. Below the cell will be output of completion logs from sessions. Note, log from last completing session will overwite previous output. Since REST calls are made asynchronously, it is possible that logs from long running sessions are overwritten by logs from shorter sessions.
         """
     )
     return

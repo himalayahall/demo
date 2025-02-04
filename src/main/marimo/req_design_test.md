@@ -196,7 +196,7 @@ Replay service can be tested manually or via automation.
 
   10. [Start](#start-session) the replay session. Events will start streaming at the new speed. When this replay session finishes take a look at the service log tail. Replay **duration** should be approximately *half* the previous replay session since the stream was replayed at *twice* the normal speed.
 
-  11. One final test to get a sense of the raw performance of replay server. First, [create](#create-session) a new replay session. Then [set](#change-replay-speed) replay speed for the new session to a very large value, e.g. `1000.0`. Finally, [start](#start-session) the session. When this replay session finishes take a look the service log tail. Replay duration will be a much smaller number!
+  11. One final test to get a sense of the raw performance of replay server. First, [create](#create-session) a new replay session. Then [set](#change-replay-speed) replay speed for the new session to a large value, e.g. `1000.0`. Finally, [start](#start-session) the session. When this replay session finishes take a look the service log tail. Replay duration will be a much smaller number!
 <!---->
 ### Automation recipe for kicking the tires
 
@@ -465,7 +465,7 @@ for speed_session in sessions:
 
 #### Start replay sessions and subscribe to event streams.
 
-This could be a long-running operation, a timer on right side of cell shows progress. Below the cell will be output of completion logs from sessions. Note, log from last completing session will overwite previous output. Sine REST call are made asynchronously, it is possible that the log from a long running session is overwritten by the log from a shorter session.
+This could be a long-running operation, a timer on right side of cell shows progress. Below the cell will be output of completion logs from sessions. Note, log from last completing session will overwite previous output. Since REST calls are made asynchronously, it is possible that logs from long running sessions are overwritten by logs from shorter sessions.
 
 ```{.python.marimo}
 for start_session in sessions:
