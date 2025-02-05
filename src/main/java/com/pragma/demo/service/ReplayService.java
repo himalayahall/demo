@@ -83,14 +83,18 @@ public class ReplayService {
      */
     public void start(String sessionId) {
         Optional<ReplaySession> session = Optional.ofNullable(cache.getIfPresent(sessionId));
-        if (session.isPresent()) {
-            ReplaySession sess = session.get();
-            if (sess.isTerminated()) {
-                log.trace("{sessionId} is terminated. Create a new session.", sessionId);
-                throw new ReplayException("Session is terminated. Cannot start.");
+        session.ifPresentOrElse(s -> {
+            if (s.isTerminated()) {
+                String msg = String.format("cannot start terminated session: %s", sessionId);
+                log.trace(msg);
+                throw new ReplayException(msg);
             }
-            session.get().start();
-        }
+            s.start();
+        }, () -> {
+            String msg = String.format("session not found: %s", sessionId);
+            log.trace(msg);
+            throw new ReplayException(msg);
+        });
     }
 
     /**
@@ -100,9 +104,18 @@ public class ReplayService {
      */
     public void stop(String sessionId) {
         Optional<ReplaySession> session = Optional.ofNullable(cache.getIfPresent(sessionId));
-        if (session.isPresent()) {
-            session.get().stop();
-        }
+        session.ifPresentOrElse(s -> {
+            if (s.isTerminated()) {
+                String msg = String.format("cannot stop terminated session: %s", sessionId);
+                log.trace(msg);
+                throw new ReplayException(msg);
+            }
+            s.stop();
+        }, () -> {
+            String msg = String.format("session not found: %s", sessionId);
+            log.trace(msg);
+            throw new ReplayException(msg);
+        });
     }
 
     /**
@@ -112,9 +125,18 @@ public class ReplayService {
      */
     public void rewind(String sessionId) {
         Optional<ReplaySession> session = Optional.ofNullable(cache.getIfPresent(sessionId));
-        if (session.isPresent()) {
-            session.get().rewind();
-        }
+        session.ifPresentOrElse(s -> {
+            if (s.isTerminated()) {
+                String msg = String.format("cannot rewind terminated session: %s", sessionId);
+                log.trace(msg);
+                throw new ReplayException(msg);
+            }
+            s.rewind();
+        }, () -> {
+            String msg = String.format("session not found: %s", sessionId);
+            log.trace(msg);
+            throw new ReplayException(msg);
+        });
     }
 
     /**
@@ -125,16 +147,35 @@ public class ReplayService {
      */
     public void jumpToEvent(String sessionId, int eventId) {
         Optional<ReplaySession> session = Optional.ofNullable(cache.getIfPresent(sessionId));
-        if (session.isPresent()) {
-            session.get().jumpToEvent(eventId);
-        }
+        session.ifPresentOrElse(s -> {
+            if (s.isTerminated()) {
+                String msg =
+                        String.format("cannot jum to event in terminated session: %s", sessionId);
+                log.trace(msg);
+                throw new ReplayException(msg);
+            }
+            s.jumpToEvent(eventId);
+        }, () -> {
+            String msg = String.format("session not found: %s", sessionId);
+            log.trace(msg);
+            throw new ReplayException(msg);
+        });
     }
 
     public void forward(String sessionId, int skipCount) {
         Optional<ReplaySession> session = Optional.ofNullable(cache.getIfPresent(sessionId));
-        if (session.isPresent()) {
-            session.get().forward(skipCount);
-        }
+        session.ifPresentOrElse(s -> {
+            if (s.isTerminated()) {
+                String msg = String.format("cannot forward terminated session: %s", sessionId);
+                log.trace(msg);
+                throw new ReplayException(msg);
+            }
+            s.forward(skipCount);
+        }, () -> {
+            String msg = String.format("session not found: %s", sessionId);
+            log.trace(msg);
+            throw new ReplayException(msg);
+        });
     }
 
     /**
@@ -145,9 +186,19 @@ public class ReplayService {
      */
     public void replaySpeed(String sessionId, double speed) {
         Optional<ReplaySession> session = Optional.ofNullable(cache.getIfPresent(sessionId));
-        if (session.isPresent()) {
-            session.get().replaySpeed(speed);
-        }
+        session.ifPresentOrElse(s -> {
+            if (s.isTerminated()) {
+                String msg =
+                        String.format("cannot set speed for terminated session: %s", sessionId);
+                log.trace(msg);
+                throw new ReplayException(msg);
+            }
+            s.replaySpeed(speed);
+        }, () -> {
+            String msg = String.format("session not found: %s", sessionId);
+            log.trace(msg);
+            throw new ReplayException(msg);
+        });
     }
 
     /**
@@ -159,6 +210,11 @@ public class ReplayService {
     public Flux<MarketDataEvent> subscribe(String sessionId) {
         Optional<ReplaySession> session = Optional.ofNullable(cache.getIfPresent(sessionId));
         if (session.isPresent()) {
+            if (session.get().isTerminated()) {
+                String msg = String.format("cannot subscribe to terminated session: %s", sessionId);
+                log.trace(msg);
+                throw new ReplayException(msg);
+            }
             return session.get().subscribe();
         }
         return Flux.empty();

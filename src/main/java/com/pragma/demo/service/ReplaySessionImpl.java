@@ -107,6 +107,7 @@ public class ReplaySessionImpl implements ReplaySession {
                         log.trace("Completing eventSink for session: {}", sessionId);
                         eventSink.tryEmitComplete();
 
+                        log.trace("stop and terminate session: {}", sessionId);
                         isRunning.set(false);
                         isTerminated.set(true);
 

@@ -346,45 +346,6 @@ def _(BASE_URL, datetime, event_id, requests):
     # Functions for interacting with RESTful aPI
     from IPython.display import clear_output, display
 
-    def decodeResponse(response : any) -> str:
-        """
-        Decode response from REST endpoint. All PUT endpoints (create session, start, stop, rewind, jump) return string, GET endpoint (subscribe) returns a stream of JSON docs. This function handles both gracefully.
-        Args:
-            response - Response from replay service.
-        Returns:
-            str: The string or JSON response from replay service.
-        """
-        try:
-            # Try to parse JSON, if it fails, handle the string response
-            resp = response.json()
-        except ValueError:  # If JSON decoding fails
-            # Handle the case where response is a simple string
-            resp = response.text
-        return resp
-
-    def compute_duration(start_datetime : datetime) -> str:
-        """
-            Compute duration between a start time and now.
-
-            Args:
-                start_datetime (datetime): Start time.
-
-            Returns:
-
-                str: Duration formatted as hh:mm:ss.zzz
-        """
-        duration = datetime.now() - start_datetime
-
-        total_seconds = duration.total_seconds()
-        hours, remainder = divmod(total_seconds, 3600)
-        minutes, remainder = divmod(remainder, 60)
-        seconds, milliseconds = divmod(remainder, 1)
-
-        return f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}:{int(milliseconds * 1000):03}"
-
-    def getSessionId(response : any) -> str:
-        return decodeResponse(response)
-
     def createSession() -> str:
         """
         Create replay session.
@@ -392,14 +353,16 @@ def _(BASE_URL, datetime, event_id, requests):
         Returns:
             Session Id or None.
         """
+        clear_output(wait=True)  # Clear previous output in Notebook
+
         create_url = BASE_URL
         response = requests.post(create_url)
-        clear_output(wait=True)  # Clear previous output in Notebook
         if response.status_code == 200:
             session_id = getSessionId(response)
-            display(f"Session created: {session_id}", clear=True)
+            # display(f"Session created: {session_id}", clear=True)
+            # display(f"Session created: {session_id}")
         else:
-            display(f"Failed to create session: {response.text}")
+            # display(f"Failed to create session: {response.text}")
             session_id = None
         return session_id
 
@@ -413,8 +376,7 @@ def _(BASE_URL, datetime, event_id, requests):
         """
         if session_id:
             speed_url = f"{BASE_URL}/speed/{session_id}/{speed}"
-            response = requests.put(speed_url)
-            display(f"{response.text}", clear=True)
+            requests.put(speed_url)
 
     def startSession(session_id : str) -> None:
         """
@@ -477,6 +439,45 @@ def _(BASE_URL, datetime, event_id, requests):
             jump_url = f"{BASE_URL}/jump/{session_id}/{event_id}"
             response = requests.put(jump_url)
             print(f"{response.text}")
+
+    def getSessionId(response : any) -> str:
+        return decodeResponse(response)
+
+    def decodeResponse(response : any) -> str:
+        """
+        Decode response from REST endpoint. All PUT endpoints (create session, start, stop, rewind, jump) return string, GET endpoint (subscribe) returns a stream of JSON docs. This function handles both gracefully.
+        Args:
+            response - Response from replay service.
+        Returns:
+            str: The string or JSON response from replay service.
+        """
+        try:
+            # Try to parse JSON, if it fails, handle the string response
+            resp = response.json()
+        except ValueError:  # If JSON decoding fails
+            # Handle the case where response is a simple string
+            resp = response.text
+        return resp
+
+    def compute_duration(start_datetime : datetime) -> str:
+        """
+            Compute duration between a start time and now.
+
+            Args:
+                start_datetime (datetime): Start time.
+
+            Returns:
+
+                str: Duration formatted as hh:mm:ss.zzz
+        """
+        duration = datetime.now() - start_datetime
+
+        total_seconds = duration.total_seconds()
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, remainder = divmod(remainder, 60)
+        seconds, milliseconds = divmod(remainder, 1)
+
+        return f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}:{int(milliseconds * 1000):03}"
     return (
         clear_output,
         compute_duration,
@@ -494,10 +495,18 @@ def _(BASE_URL, datetime, event_id, requests):
 
 
 @app.cell
-def _(BASE_URL, List, asyncio, compute_duration, datetime, display):
+def _(
+    BASE_URL,
+    List,
+    asyncio,
+    compute_duration,
+    datetime,
+    display,
+    sessionId,
+):
     import aiohttp
 
-    async def subscribeSession(session_id : str) -> None:
+    async def subscribeStartSession(session_id : str) -> None:
         """
         Subscribe to replay session. Starts listening for session event stream and precesses  event until the strem is closed by server.
 
@@ -505,37 +514,22 @@ def _(BASE_URL, List, asyncio, compute_duration, datetime, display):
 
             session_id (str): Session Id.
         """
-        # if session_id:
-        #     start_datetime = datetime.now()
-
-        #     subscribe_url = f"{BASE_URL}/subscribe/{session_id}"
-        #     response = requests.get(subscribe_url, stream=True)
-
-        #     # Process and display streaming data
-        #     for chunk in response.iter_lines(decode_unicode=True):
-        #         try:
-        #             if chunk:
-        #                 pass
-        #         except KeyboardInterrupt:
-        #             display(f"Subscribe session {session_id} stopped manually", clear)
-
-        #     duration = compute_duration(start_datetime)
-        #     display(f"Subscribe session {session_id} finished at {datetime.now()}: {duration}", clear=True)
         if session_id:
 
+            display(f"subscribeStartSession: {sessionId}")
             start_datetime = datetime.now()
-            subscribe_url = f"{BASE_URL}/subscribe/{session_id}"
+            subscribe_start__url = f"{BASE_URL}/subscribe_start/{session_id}"
 
             async with aiohttp.ClientSession() as aiohttp_session:
                 try:
-                    async with aiohttp_session.get(subscribe_url) as response:
+                    async with aiohttp_session.get(subscribe_start__url) as response:
                         async for line in response.content.iter_any():
                             chunk = line.decode('utf-8').strip()
                             if chunk:
                                 try:
                                     pass  # Process the chunk here
                                 except KeyboardInterrupt:
-                                    print(f"Subscribe session {session_id} stopped manually")
+                                    display(f"Subscribe session {session_id} stopped manually")
                 except aiohttp.ClientPayloadError:
                     display("Error: Response payload is incomplete.")
                 except Exception as e:
@@ -545,17 +539,65 @@ def _(BASE_URL, List, asyncio, compute_duration, datetime, display):
             display(f"Subscribe session {session_id} finished at {datetime.now()}: {duration}", clear=True)
 
 
-    async def subscribeSessions(sessions : List[str]) -> None:
+    async def subscribeStartSessions(sessions : List[str]) -> None:
         """
-        Subscribe to 1 or more sessions.
+        Subscribe and start to 1 or more sessions.
 
         Args:
 
             sessions(List[str]) : Session Ids.
         """
-        tasks = [subscribeSession(session) for session in sessions]
-        await asyncio.gather(*tasks)
-    return aiohttp, subscribeSession, subscribeSessions
+        if len(sessions) > 0:
+            tasks = [subscribeStartSession(s) for s in sessions]
+            return await asyncio.gather(*tasks)
+        return None
+        
+    # async def subscribeSession(session_id : str) -> None:
+    #     """
+    #     Subscribe to replay session. Starts listening for session event stream and precesses  event until the strem is closed by server.
+
+    #     Args:
+
+    #         session_id (str): Session Id.
+    #     """
+    #     if session_id:
+
+    #         start_datetime = datetime.now()
+    #         subscribe_url = f"{BASE_URL}/subscribe/{session_id}"
+
+    #         async with aiohttp.ClientSession() as aiohttp_session:
+    #             try:
+    #                 async with aiohttp_session.get(subscribe_url) as response:
+    #                     async for line in response.content.iter_any():
+    #                         chunk = line.decode('utf-8').strip()
+    #                         if chunk:
+    #                             try:
+    #                                 pass  # Process the chunk here
+    #                             except KeyboardInterrupt:
+    #                                 print(f"Subscribe session {session_id} stopped manually")
+    #             except aiohttp.ClientPayloadError:
+    #                 display("Error: Response payload is incomplete.")
+    #             except Exception as e:
+    #                 display(f"Unexpected error: {e}")
+
+    #         duration = compute_duration(start_datetime)
+    #         display(f"Subscribe session {session_id} finished at {datetime.now()}: {duration}", clear=True)
+
+
+    # async def subscribeSessions(sessions : List[str]) -> None:
+    #     """
+    #     Subscribe to 1 or more sessions.
+
+    #     Args:
+
+    #         sessions(List[str]) : Session Ids.
+    #     """
+    #     if len(sessions) > 0:
+    #         tasks = [subscribeSession(session) for session in sessions]
+    #         return await asyncio.gather(*tasks)
+    #     return None
+
+    return aiohttp, subscribeStartSession, subscribeStartSessions
 
 
 @app.cell
@@ -567,7 +609,7 @@ def _(mo):
 @app.cell
 def _():
     SESSION_COUNT = 1
-    SPEED = 1000.0
+    SPEED = 10000.0
     return SESSION_COUNT, SPEED
 
 
@@ -578,12 +620,14 @@ def _(mo):
 
 
 @app.cell
-def _(SESSION_COUNT, createSession):
+def _(SESSION_COUNT, createSession, display):
     sessions = []
-
     for sesssion_count in range(0, SESSION_COUNT):
         sessionId = createSession()
-        sessions.append(sessionId)
+        if sessionId:
+            sessions.append(sessionId)
+
+    display(f"created {len(sessions)} sessions")
     return sessionId, sessions, sesssion_count
 
 
@@ -594,9 +638,11 @@ def _(mo):
 
 
 @app.cell
-def _(SPEED, sessions, setSpeed):
+def _(SPEED, display, sessions, setSpeed):
     for speed_session in sessions:
         setSpeed(speed_session, SPEED)
+
+    display(f"set speed: {SPEED} for {len(sessions)} sessions")
     return (speed_session,)
 
 
@@ -613,12 +659,10 @@ def _(mo):
 
 
 @app.cell
-async def _(sessions, startSession, subscribeSessions):
-    for start_session in sessions:
-        startSession(start_session)
-
-    await subscribeSessions(sessions)
-    return (start_session,)
+async def _(sessions, subscribeStartSession):
+    for sub_start_sessionId in sessions:
+        await subscribeStartSession(sub_start_sessionId)
+    return (sub_start_sessionId,)
 
 
 @app.cell
@@ -633,7 +677,11 @@ def _(mo):
 
         Baseline testcase is a single client running at replay `speed = 1.0` - it takes roughly `2 minutes` to publish all data events. With `[1, 10,100, 1000]` clients running at `speed = 1.0`, there is no performance impact. 
 
-        A single client running at replay `speed = 1000.0` received all events in `00:00:00:544`, which works out to roughly 6000 events/sec.
+        To test the *'pedal to the metal'* performance, a single client session was run in this notepad, at replay `speed = 10000.0`. 
+
+        All `3453` events were published by the replay server in `00:00:00:013`, a throughput of about `265,615` events/sec. 
+
+        On the notebook client all event were received and logged in `00:00:00:357`.
 
         | # Sessions | Replay Speed | Duration <br> `hh:mm:ss:zzz`|
         |------------|--------------|--------------|

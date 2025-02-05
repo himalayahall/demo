@@ -1,6 +1,7 @@
 package com.pragma.demo.controller;
 
 import jakarta.validation.constraints.Positive;
+import lombok.extern.slf4j.Slf4j;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import com.pragma.demo.service.ReplayException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @RestController
 @RequestMapping("/mktdata")
 @Tag(name = "Market Data Replay",
@@ -29,7 +31,7 @@ public class MarketDataController {
         @Operation(summary = "Create replay session",
                         description = "Create new replay session. Make sure to subscribe to session by calling stream.")
         @ApiResponse(responseCode = "200", description = "Successfully created session")
-        public Mono<String> createSession() {
+        public Mono<String> createSession() {  
                 return Mono.just(marketDataService.createSession());
         }
 
@@ -40,7 +42,7 @@ public class MarketDataController {
         @ApiResponse(responseCode = "400", description = "Bad request")
         public Mono<String> start(@PathVariable @Parameter(name = "sessionId",
                         description = "Session Id (UUID)", required = true) String sessionId) {
-                return Mono.fromCallable(() -> {
+                        return Mono.fromCallable(() -> {
                         validateUUID(sessionId); // Runs in a reactive-safe way
                         return sessionId;
                 }).then(Mono.fromRunnable(() -> marketDataService.start(sessionId))) // Runs
@@ -166,8 +168,8 @@ public class MarketDataController {
         @ApiResponse(responseCode = "200", description = "Successfully subscribed")
         @ApiResponse(responseCode = "400", description = "Bad request")
         public Flux<MarketDataEvent> subscribe(@PathVariable @Parameter(name = "sessionId",
-                        description = "Session Id (UUID)", required = true) String sessionId) {
-                return Mono.fromCallable(() -> {
+                        description = "Session Id (UUID)", required = true) String sessionId) {            
+                        return Mono.fromCallable(() -> {
                         validateUUID(sessionId); // This may throw exceptions
                         return sessionId;
                 }).thenMany(marketDataService.subscribe(sessionId)) // Continue if validation passes
@@ -176,6 +178,30 @@ public class MarketDataController {
                                                 e -> Flux.error(new ResponseStatusException(
                                                                 HttpStatus.BAD_REQUEST,
                                                                 e.getMessage())));
+        }
+
+        @GetMapping(value = "/session/subscribe_start/{sessionId}", produces = "text/event-stream")
+        @Operation(summary = "Subscribe to replay session events and start session.",
+                        description = "Subscribe to replay session events and then start session.")
+        @ApiResponse(responseCode = "200", description = "Successfully subscribed and started")
+        @ApiResponse(responseCode = "400", description = "Bad request")
+        public Flux<MarketDataEvent> subscribeStart(@PathVariable @Parameter(name = "sessionId",
+                        description = "Session Id (UUID)", required = true) String sessionId) {
+                return Mono.fromCallable(() -> {
+                        validateUUID(sessionId);
+                        return sessionId;
+                }).thenMany(doSubscribeStart(sessionId))
+                                .onErrorResume(ResponseStatusException.class, e -> Flux.error(e))
+                                .onErrorResume(ReplayException.class,
+                                                e -> Flux.error(new ResponseStatusException(
+                                                                HttpStatus.BAD_REQUEST,
+                                                                e.getMessage())));
+        }
+
+        private Flux<MarketDataEvent> doSubscribeStart(String sessionId) {
+                Flux<MarketDataEvent> flux = marketDataService.subscribe(sessionId);
+                marketDataService.start(sessionId);
+                return flux;
         }
 
         private void validateUUID(String sessionId) {
