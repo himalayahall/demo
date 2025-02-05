@@ -53,7 +53,7 @@ clock in lockstep with the replay clock. And a replay rate of 1.5 would advance 
 ### Functional
 
 1. Stream market data events to Web clients.
-2. Allow multiple clients - i.e. must support concurrent replay sessions.
+2. Allow multiple clients - i.e. mujst support concurrent replay sessions.
 3. Clients should be able to control replay sessions by sending the following commands:
     - **Create** replay session.
     - **Start** & **Stop** session.
@@ -184,7 +184,7 @@ Replay service can be tested manually or via automation.
 
 > - Once a session has completed playing the **full** market data stream, it is automatically **terminated**. Terminated sessions **cannot be restarted**. However, while a session is midstream, it may freely be started, stopped, rewound, forwarded, sped up or down, jumped to specific event.
 
-> [Create](#create-session) a brand new session and [start](#start-session) it. Before it finishes [stop](#stop-session).
+> [Create](#create-session) a brand new session,  [start](#start-session) it, and [stop](#stop-session) it before the full data stream has been played.
 
   <a id="rewind-session"></a>
 7. Rewind session
@@ -198,7 +198,7 @@ Replay service can be tested manually or via automation.
 
 9. [Start](#start-session) the replay session. Events will start streaming at the new speed. When this replay session finishes take a look at the service log tail. Replay **duration** should be approximately *half* the previous replay session since the stream was replayed at *twice* the normal speed.
 
-10. One final test to get a sense of the raw performance of replay server. First, [create](#create-session) a new replay session. Then [set](#change-replay-speed) replay speed for the new session to a large value, e.g. `1000.0`. Finally, [start](#start-session) the session. When this replay session finishes take a look the service log tail. Replay duration will be a much smaller number!
+10. One final test to get a sense of the raw performance of replay service. First, [create](#create-session) a new replay session. Then [set](#change-replay-speed) replay speed for the new session to a large value, e.g. `1000.0`. Finally, [start](#start-session) the session. Replay server will finish playing events at a high rate in `00:00:00:566 (about half a second)`!
 <!---->
 ### Automation recipe for kicking the tires
 

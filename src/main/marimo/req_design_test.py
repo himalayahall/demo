@@ -231,7 +231,7 @@ def _(mo):
         1. Enable logging
 
              > - In *application.properties*, locate `logging.level.com.pragma.demo=INFO` and replace it with `logging.level.com.pragma.demo=TRACE`. This will enable TRACE level logging which will be come in handy for manual testing.
-      
+
         2. [Start replay service](#installation).
         3. Go to http://localhost:8080/swagger-ui.html.
 
@@ -260,7 +260,7 @@ def _(mo):
 
         > - Once a session has completed playing the **full** market data stream, it is automatically **terminated**. Terminated sessions **cannot be restarted**. However, while a session is midstream, it may freely be started, stopped, rewound, forwarded, sped up or down, jumped to specific event.
 
-        > [Create](#create-session) a brand new session and [start](#start-session) it. Before it finishes [stop](#stop-session).
+        > [Create](#create-session) a brand new session,  [start](#start-session) it, and [stop](#stop-session) it before the full data stream has been played.
 
           <a id="rewind-session"></a>
         7. Rewind session
@@ -274,7 +274,7 @@ def _(mo):
 
         9. [Start](#start-session) the replay session. Events will start streaming at the new speed. When this replay session finishes take a look at the service log tail. Replay **duration** should be approximately *half* the previous replay session since the stream was replayed at *twice* the normal speed.
 
-        10. One final test to get a sense of the raw performance of replay server. First, [create](#create-session) a new replay session. Then [set](#change-replay-speed) replay speed for the new session to a large value, e.g. `1000.0`. Finally, [start](#start-session) the session. When this replay session finishes take a look the service log tail. Replay duration will be a much smaller number!
+        10. One final test to get a sense of the raw performance of replay service. First, [create](#create-session) a new replay session. Then [set](#change-replay-speed) replay speed for the new session to a large value, e.g. `1000.0`. Finally, [start](#start-session) the session. Replay server will finish playing events at a high rate in `00:00:00:566 (about half a second)`!
         """
     )
     return
