@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -151,13 +152,14 @@ public class ReplaySessionImpl implements ReplaySession {
         log.trace("jump to eventId: {}, session: {}", eventId, sessionId);
 
         // TODO: inefficient scan
-        for (int i = 0; i < events.size(); i++) {
-            if (events.get(i).id() == eventId) {
-                jumpToEventByIndex(i);
-                return;
-            }
-        }
-        throw new ReplayException(String.format("Invalid event ID:: {}", eventId));
+
+        IntStream.range(0, events.size())
+            .filter(i -> events.get(i).id() == eventId)
+            .findFirst()
+            .ifPresentOrElse(i -> jumpToEventByIndex(i),
+                () -> {
+                    throw new ReplayException(String.format("Invalid event ID:: {}", eventId));
+                });
     }
 
     @Override
