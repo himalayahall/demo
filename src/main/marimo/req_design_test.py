@@ -96,16 +96,16 @@ def _(mo):
 
         - **Spring Boot application** with **RESTful APIs** for replay controls.
         - **Reactive SpringFlux** application for streaming market data events.
-        - **Data** -> read from [CSV file](https://github.com/himalayahall/demo/blob/9f346eac082b2ba9300041759bce3413532ba7fa/src/main/resources/marketdata-for-coding-challenge.csv). FYI - file had invisible BOM which caused a lot of head scratching before I pinpointed the cause and fixed it (see below).
+        - **Data** -> read from [CSV file](https://github.com/himalayahall/demo/blob/9f346eac082b2ba9300041759bce3413532ba7fa/src/main/resources/marketdata-for-coding-challenge.csv). FYI - file had invisible BOM (invisible byte-order mark) which caused a lot of head scratching before I pinpointed the cause and fixed it (see below).
         - **Session cache** - sessions are stored in Google Guava cache, **stale** sessions are ejected after a configurable timeout in `application.properties`. Default cache cofiguration is `1 HOUR`.
         - **Sliding window** -> virtual sliding window moves over cached events, during each publishing cycle ALL events under sliding window are published. Sliding window and event publication controls are set through `application.properties`:
 
             - **publishTimerMillis** -  controls how often the sliding window is moved, default: `1 millisecond`.
-            - **replayClockMillis** - tracks how far time has progressed in a replay session. Controls the sliding window size. When a sessikon is `created` or `rewound` the session `replayClockMillis` is initialized to timestamp of the first data event. At each publishing cycle all `unpublished` events with $timestamp \leq replayClockMillis$ are published and then `replayClockMillis` is set to $replayClockMillis + (replaySpeed \times publishTimerMillis$).
+            - **replayClockMillis** - tracks progress of time in replay session; controls the sliding window size. When a session is `created` or `rewound`, the `replayClockMillis` is initialized to timestamp of the first data event. At each publishing cycle all `unpublished` events with $timestamp \leq replayClockMillis$ are published and then `replayClockMillis` is set to $replayClockMillis + (replaySpeed \times publishTimerMillis$).
 
           - **replaySpeed** - controls how fast the replay clock advances. For example, suppose  $publishTimerMillis =  1$ and $replaySpeed = 1.0$. During each publishing cycle `replayClockMillis` will advance by $replaySpeed \times publishTimerMillis$.
 
-            Suppose `replaySpeed` is bumped up to `2.0`. During the next publishing cycle `replayClockMillis` will advance  $2.0 \times publishTimerMillis$ milliseconds. Using default replay settings,  `replayClockMillis` will advance `2 milliseconds` for each `1 millisecond` advance of the system clock. This works both for speeding up ($replaySpeed \gt 1.0$) and slowing down ($replaySpeed \lt 1.0)$ replay.
+            Suppose `replaySpeed` is bumped up to `2.0`. During each subsequent publishing cycle, `replayClockMillis` will advance  $2.0 \times publishTimerMillis$ milliseconds. For example, with default replay settings,  `replayClockMillis` will advance `2 milliseconds` for each `1 millisecond` advance of the system clock. This works both for speeding up ($replaySpeed \gt 1.0$) and slowing down ($replaySpeed \lt 1.0)$ replay.
 
           - Automated performance testing - taking a page out the guidebook on best practices in data science, use a Notebook infrastructure for documenting the implementation and for automated performance testing. This brings together the documentation (installation, API usage, etc.), manual testing guidelines via RESTful API, and automated testing via Python in a unified document. This document you are reading was exported from the [Marimo](https://marimo.io) Notebook. Marimo is a [Jupyter](https://jupyter.org) alternative, purpose built as a git-friendly dev environment.
         """
@@ -124,10 +124,10 @@ def _(mo):
             - **ReplaySessionImpl** - default implementation of ReplaySession.
         - **MarketDataEvent** - market data record (data model).
         - **CSVReaderService** - CSV reader service interface
-      
+
               - **JacksonCSVReader** - Jackson implementation (default).
-      
-              - **ApacheCSVReaderService** - Apache Commons implementation. Tried this first but the API was *messy* (deprecated API, dealing with BOM was cumbersome).
+
+              - **ApacheCSVReaderService** - Apache Commons implementation. Tried this first but the API was *messy* (deprecated API, dealing with byte-order mark, BOM, was cumbersome).
         """
     )
     return
@@ -139,7 +139,7 @@ def _(mo):
         r"""
         ## Unit Testing
 
-        - `Unit tests` are used to test  functionality of the replay service including Start, Stop, Set Replay Speed, Rewind (Reset), Forward, Jump to Event. `Mocks` are used for market data events.
+        - Replay service functionality is tested via `unit tests`. Key functionality is tested including `create`, `start`, `stop`, `set speed`, `rewind`, `forward`, and `jump to event`.
         """
     )
     return
@@ -164,9 +164,9 @@ def _(mo):
         ### Running
 
         - Load project in VSCode (or another IDE).
-        - Open terminal inside VSCode for view replay service logs.
-        - Run application from VSCode.
-        - On successful launch below logs will be rendered.
+        - Open terminal inside VSCode for viewing replay service logs.
+        - Run application inside VSCode.
+        - Confirm successful launch through logs in terminal.
         -----
         ```
              ____          _            __ _ _
@@ -228,53 +228,53 @@ def _(mo):
 
         ### Manual recipe for kicking the tires
 
-          1. Enable logging
+        1. Enable logging
 
              > - In *application.properties*, locate `logging.level.com.pragma.demo=INFO` and replace it with `logging.level.com.pragma.demo=TRACE`. This will enable TRACE level logging which will be come in handy for manual testing.
+      
+        2. [Start replay service](#installation).
+        3. Go to http://localhost:8080/swagger-ui.html.
 
-          3. [Start replay service](#installation).
-          4. Go to http://localhost:8080/swagger-ui.html.
-
-        <a id="create-session"></a>
-          5. Create replay session
+         <a id="create-session"></a>
+        4. Create replay session
 
         > - Click `POST /mktdata/session`.
         > - Click `Try it out`.
         > - Click `Execute`. A new session will be created. Copy the session ID from the `Response body`.
 
         <a id="stop-session"></a>
-          6. Stop replay session
+        5. Stop replay session
 
         > - Click `PUT /mktdata/session/stop/{sessionId}`.
         > - Click `Try it out`.
-        > - Click `Execute`. Logs will confirm session has been stopped. `PUT` operations in REST are idempotent and produce the same result no matter how many times they are called. Of course, interleaving different operations will produce different results.
+        > - Click `Execute`. Logs will confirm session has been stopped. `PUT` operations in REST are idempotent and produce the same result no matter how many times they are called. Interleaving different operations may produce different results.
 
         <a id="start-session"></a>
-          7. Start replay session
+        6. Start replay session
 
         >- Click `PUT /mktdata/session/start/{sessionId}`.
         > - Click `Try it out`.
         > - Paste session ID into `Session Id` textbox.
         > - Click `Execute`. This will start the newly created replay session. Replay service `TRACE` logs for published events will be visible in the terminal window. And after replay session completes, a summary will be logged
-              with the start time, end time, and duration of the replay session. This baseline replays the full dataset at **normal** speed in approximately `58 seconds (00:01:58)`. Last market data event has `id=3453`.
+              with the start time, end time, and duration of the replay session. This baseline replays the full dataset at **normal** speed in approximately `00:01:58 (1 minute, 58 seconds)`. Last market data event has `id=3453`.
 
-        > - Once a session has completed playing the **full** market data stream, it is automatically **terminated**. Terminated sessions **cannot be restarted**. However, while a session is midstream, it may freely be stopped, restarted, rewound, forwarded, speed changed up/down, jumped to specific event.
+        > - Once a session has completed playing the **full** market data stream, it is automatically **terminated**. Terminated sessions **cannot be restarted**. However, while a session is midstream, it may freely be started, stopped, rewound, forwarded, sped up or down, jumped to specific event.
 
         > [Create](#create-session) a brand new session and [start](#start-session) it. Before it finishes [stop](#stop-session).
 
           <a id="rewind-session"></a>
-          8. Rewind session
+        7. Rewind session
 
         > - Click `PUT /mktdata/session/rewind/{sessionId}`, click `Try it out`, paste session ID into `Session Id` textbox, and click `Execute`. Logs will show the session has been rewound.
 
         <a id="change-replay-speed"></a> 
-          9. Change replay speed
+        8. Change replay speed
 
         > - Click `PUT /mktdata/session/speed/{sessionId}/{speed}`, click `Try it out`, paste session ID into `Session Id` textbox, enter 2.0 in `speed` textbox. Click `Execute`. Confirm replay speed has been doubled (see logs).
 
-          10. [Start](#start-session) the replay session. Events will start streaming at the new speed. When this replay session finishes take a look at the service log tail. Replay **duration** should be approximately *half* the previous replay session since the stream was replayed at *twice* the normal speed.
+        9. [Start](#start-session) the replay session. Events will start streaming at the new speed. When this replay session finishes take a look at the service log tail. Replay **duration** should be approximately *half* the previous replay session since the stream was replayed at *twice* the normal speed.
 
-          11. One final test to get a sense of the raw performance of replay server. First, [create](#create-session) a new replay session. Then [set](#change-replay-speed) replay speed for the new session to a large value, e.g. `1000.0`. Finally, [start](#start-session) the session. When this replay session finishes take a look the service log tail. Replay duration will be a much smaller number!
+        10. One final test to get a sense of the raw performance of replay server. First, [create](#create-session) a new replay session. Then [set](#change-replay-speed) replay speed for the new session to a large value, e.g. `1000.0`. Finally, [start](#start-session) the session. When this replay session finishes take a look the service log tail. Replay duration will be a much smaller number!
         """
     )
     return
@@ -606,7 +606,7 @@ def _(mo):
         """
         #### Start replay sessions and subscribe to event streams. 
 
-        This could be a long-running operation, a timer on right side of cell shows progress. Below the cell will be output of completion logs from sessions. Note, log from last completing session will overwite previous output. Since REST calls are made asynchronously, it is possible that logs from long running sessions are overwritten by logs from shorter sessions.
+        This could be a long-running operation, a timer on right side of cell shows progress. Below the cell will be output of completion logs from sessions. Note, logs from last completing session will overwite previous output. Since REST calls are made asynchronously, it is possible that logs from long running sessions are overwritten by logs from shorter sessions.
         """
     )
     return
@@ -688,11 +688,12 @@ def _():
 def _(mo):
     mo.md(
         r"""
-        ### Ideas for Performance Improvement
+        ### Suggestions for Improving Performance
 
         - Run replay server and client on separate machines.
-        - Make sure network interfaces on test machines have sufficient performance.
-        - Carefully tune JVM and dependent libraries. Use a binary wire encoding like Google Proto to cut down network traffic.
+        - Make sure network interfaces on test machines support high throughput.
+        - Carefully tune JVM and dependent libraries.
+        - Use binary wire encoding like Google Proto to reduce network traffic.
         - Cache large datasets in a distributed cache like Redis.
         - Horizontal scaling -> launch additional replay server processes with a Load Balancer to fan out traffic among the servers. Sticky connections would pin client traffic to the same server.
 
