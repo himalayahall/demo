@@ -6,10 +6,14 @@ import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import java.time.Duration;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,6 +32,7 @@ public class ReplaySessionImpl implements ReplaySession {
 
     // Event stream
     private final List<MarketDataEvent> events;
+    private final Map<Integer, Integer> eventIndexById = new HashMap<>(); // for fast lookup during jumpToEvent()
 
     // Current index into event stream
     private final AtomicInteger currentIndex = new AtomicInteger(0);
@@ -49,7 +54,11 @@ public class ReplaySessionImpl implements ReplaySession {
     public ReplaySessionImpl(String sessionId, List<MarketDataEvent> events,
             long publishTimerMillis) {
         this.sessionId = sessionId;
+
         this.events = events;
+        IntStream.range(0, events.size())   // create map of eventId to index
+                .forEach(idx -> eventIndexById.put(events.get(idx).id(), idx));
+
         this.publishTimerMillis = publishTimerMillis;
 
         this.eventSink = Sinks.many().unicast().onBackpressureBuffer();
@@ -69,7 +78,6 @@ public class ReplaySessionImpl implements ReplaySession {
 
         log.trace("start session: {}, subscriber count: {}", sessionId,
                 eventSink.currentSubscriberCount());
-
         long startMillis = System.currentTimeMillis();
         isRunning.set(true);
         Flux.interval(Duration.ofMillis(publishTimerMillis), SCHEDULER).takeWhile(
@@ -150,16 +158,11 @@ public class ReplaySessionImpl implements ReplaySession {
         }
 
         log.trace("jump to eventId: {}, session: {}", eventId, sessionId);
-
-        // TODO: inefficient scan
-
-        IntStream.range(0, events.size())
-            .filter(i -> events.get(i).id() == eventId)
-            .findFirst()
-            .ifPresentOrElse(i -> jumpToEventByIndex(i),
-                () -> {
-                    throw new ReplayException(String.format("Invalid event ID:: {}", eventId));
-                });
+        Integer idx = eventIndexById.get(eventId);
+        if (idx == null) {
+            throw new ReplayException(String.format("Invalid event ID:: {}", eventId));
+        }
+        jumpToEventByIndex(idx);
     }
 
     @Override
