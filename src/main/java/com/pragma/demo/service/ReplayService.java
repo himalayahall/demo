@@ -39,8 +39,8 @@ public class ReplayService {
     @Value("${app.market.replay.publishTimerMillis}")
     private long publishTimerMillis;
 
-    @Value("${app.market.replay.pathToFile}")
-    private String pathToFile;
+    @Value("${app.market.replay.data_file}")
+    private String dataFile;
 
     @Autowired
     private ResourceLoader resourceLoader;
@@ -222,9 +222,9 @@ public class ReplayService {
 
     @PostConstruct
     public void init() {
-        log.info("Path to file: {}", pathToFile);
+        log.info("Data file: {}", dataFile);
         try {
-            Resource resource = resourceLoader.getResource("classpath:" + pathToFile);
+            Resource resource = resourceLoader.getResource("classpath:" + dataFile);
             this.events = csvReader.readMarketDataEvents(resource);
             SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss:SSS");
             log.info("Events: {}, First: {}, Last: {}", this.events.size(),
