@@ -596,7 +596,7 @@ Below are performance test results were run on a Apple Macbook with 1.4 GHz Quad
 
 Since testing was done using localhostlocalhost (bypassing the physical network) there was no network latency, packet loss, or bandwidth constraints. However, clients are running inside a Marimo notebook with browser updates, which will have significant impact on performance with large number of concurrent clients.
 
-Baseline testcase is a single client running at replay speed = 1.0 - it takes roughly 2 minutes to publish all data events. To test the *'pedal to the metal'* performance, a single client session was run in this notepad, at replay speed = 10000.0. All 3453 events were published by the replay server in 00:00:00:013, a throughput of about 265,615265,615 events/sec. And on the web notebook client all event were received in 00:00:00:357.
+Baseline testcase is a single client running at replay speed = 1.0 - it takes roughly 2 minutes to publish all data events. To test the *'pedal to the metal'* performance, a single client session was run in this notepad, at replay `speed = 10000.0`. All `3453` events were published by the replay server in `00:00:00:013`, a throughput of about `265,615 events/sec`. On the notebook web client, all event were received in `00:00:00:357`.
 
 Plot and data from the automated experiments are shown below. At low speeds there is minimal impact from increasing number of clients. This may be due to the recorded data being sparse, so even large number of clients can be serviced without impacting throughput.
 
