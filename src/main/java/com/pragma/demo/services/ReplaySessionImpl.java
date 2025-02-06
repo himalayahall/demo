@@ -1,4 +1,4 @@
-package com.pragma.demo.service;
+package com.pragma.demo.services;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;

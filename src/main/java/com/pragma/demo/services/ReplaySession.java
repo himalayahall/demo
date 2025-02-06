@@ -1,4 +1,4 @@
-package com.pragma.demo.service;
+package com.pragma.demo.services;
 
 import java.util.Date;
 import com.pragma.demo.models.MarketDataEvent;

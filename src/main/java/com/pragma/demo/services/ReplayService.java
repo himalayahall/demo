@@ -1,4 +1,4 @@
-package com.pragma.demo.service;
+package com.pragma.demo.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,6 +8,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import com.google.common.cache.Cache;
 import com.pragma.demo.models.MarketDataEvent;
+import com.pragma.demo.services.data.CSVReaderService;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;

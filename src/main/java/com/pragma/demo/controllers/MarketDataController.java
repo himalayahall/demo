@@ -1,4 +1,4 @@
-package com.pragma.demo.controller;
+package com.pragma.demo.controllers;
 
 import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
@@ -7,13 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import com.pragma.demo.service.ReplayService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import com.pragma.demo.models.MarketDataEvent;
-import com.pragma.demo.service.ReplayException;
+import com.pragma.demo.services.ReplayException;
+import com.pragma.demo.services.ReplayService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

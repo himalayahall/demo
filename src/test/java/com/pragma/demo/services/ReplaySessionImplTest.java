@@ -1,4 +1,4 @@
-package com.pragma.demo.service;
+package com.pragma.demo.services;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.pragma.demo.models.MarketDataEvent;
+import com.pragma.demo.services.ReplaySessionImpl;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 

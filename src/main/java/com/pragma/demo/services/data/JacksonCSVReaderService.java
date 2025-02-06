@@ -1,4 +1,4 @@
-package com.pragma.demo.service;
+package com.pragma.demo.services.data;
 
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;

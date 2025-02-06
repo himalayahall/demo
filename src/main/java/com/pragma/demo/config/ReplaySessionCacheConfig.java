@@ -1,4 +1,4 @@
-package com.pragma.demo.service;
+package com.pragma.demo.config;
 
 import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Value;
@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
+import com.pragma.demo.services.ReplaySession;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
