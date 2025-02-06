@@ -16,6 +16,7 @@ import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
+import com.pragma.demo.models.MarketDataEvent;
 
 @Slf4j
 public class ReplaySessionImpl implements ReplaySession {

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-
+import com.pragma.demo.models.MarketDataEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;

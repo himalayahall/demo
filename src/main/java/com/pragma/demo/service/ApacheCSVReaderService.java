@@ -6,6 +6,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.input.BOMInputStream;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import com.pragma.demo.models.MarketDataEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
