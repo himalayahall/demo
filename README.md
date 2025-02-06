@@ -598,39 +598,38 @@ Since testing was done using localhostlocalhost (bypassing the physical network)
 
 Baseline testcase is a single client running at replay speed = 1.0 - it takes roughly 2 minutes to publish all data events. To test the *'pedal to the metal'* performance, a single client session was run in this notepad, at replay speed = 10000.0. All 3453 events were published by the replay server in 00:00:00:013, a throughput of about 265,615265,615 events/sec. And on the web notebook client all event were received in 00:00:00:357.
 
-Plot and data from the automated experiments are shown below. At low speeds, `$speed \lt 10$`, there is minimal impact from increasing number of clients. This may be due to the recorded data being sparse, so even large number of clients can be serviced without impacting throughput.
+Plot and data from the automated experiments are shown below. At low speeds there is minimal impact from increasing number of clients. This may be due to the recorded data being sparse, so even large number of clients can be serviced without impacting throughput.
 
-At higher speeds, e.g. `speed = 10`, replay duration increases (i.e. throughput decreases). Growth in replay duration appears to be linear for $number of clients \ge 200$.
+For $speed \ge\ 10$, replay duration grows (i.e. throughput decreases) for number of $clients \ge 200$; growth appears to be `linear`.
 
-![plot](https://github.com/himalayahall/demo/blob/2bb2c2b15165ac10633dfff71a8420e54fd08afa/src/main/resources/perf.png).
+![plot](https://github.com/himalayahall/demo/blob/2bb2c2b15165ac10633dfff71a8420e54fd08afa/src/main/resources/perf.png)
 
-
-|    |   num_clients |   speed |   time_sec |
-|----|---------------|---------|------------|
-|  0 |             1 |    10   |     11.838 |
-|  1 |             1 |     2   |     59.106 |
-|  2 |             1 |     1   |    118.199 |
-|  3 |             1 |     0.5 |    236.394 |
-|  4 |            10 |    10   |     11.835 |
-|  5 |            10 |     2   |     59.109 |
-|  6 |            10 |     1   |    118.206 |
-|  7 |            10 |     0.5 |    236.399 |
-|  8 |            50 |    10   |     11.898 |
-|  9 |            50 |     2   |     59.134 |
-| 10 |            50 |     1   |    118.231 |
-| 11 |            50 |     0.5 |    236.422 |
-| 12 |           100 |    10   |     11.994 |
-| 13 |           100 |     2   |     59.189 |
-| 14 |           100 |     1   |    118.32  |
-| 15 |           100 |     0.5 |    236.452 |
-| 16 |           200 |    10   |     12.891 |
-| 17 |           200 |     2   |     59.392 |
-| 18 |           200 |     1   |    118.519 |
-| 19 |           200 |     0.5 |    236.728 |
-| 20 |           500 |    10   |     61.944 |
-| 21 |           500 |     2   |     65.99  |
-| 22 |           500 |     1   |    120.554 |
-| 23 |           500 |     0.5 |    238.02  |
+| num_clients | speed  | time_sec  |
+|------------:|-------:|----------:|
+|          1  |  10.0  |    11.838 |
+|          1  |   2.0  |    59.106 |
+|          1  |   1.0  |   118.199 |
+|          1  |   0.5  |   236.394 |
+|         10  |  10.0  |    11.835 |
+|         10  |   2.0  |    59.109 |
+|         10  |   1.0  |   118.206 |
+|         10  |   0.5  |   236.399 |
+|         50  |  10.0  |    11.898 |
+|         50  |   2.0  |    59.134 |
+|         50  |   1.0  |   118.231 |
+|         50  |   0.5  |   236.422 |
+|        100  |  10.0  |    11.994 |
+|        100  |   2.0  |    59.189 |
+|        100  |   1.0  |   118.320 |
+|        100  |   0.5  |   236.452 |
+|        200  |  10.0  |    12.891 |
+|        200  |   2.0  |    59.392 |
+|        200  |   1.0  |   118.519 |
+|        200  |   0.5  |   236.728 |
+|        500  |  10.0  |    61.944 |
+|        500  |   2.0  |    65.990 |
+|        500  |   1.0  |   120.554 |
+|        500  |   0.5  |   238.020 |
 
 ```{.python.marimo}
 from tabulate import tabulate
@@ -640,69 +639,6 @@ print(tabulate(df, headers='keys', tablefmt='github'))
 
 ```{.python.marimo}
 plot(df)
-```
-
-## Performance
-
-Below are performance test results were run on a Apple Macbook with 1.4 GHz Quad-Core Intel Core i5 with 16GB 2133 MHz RAM. Amazon Corretto 17 JDK, Heap Size (-Xmx and -Xms): 4096 MB. Client and server processes were running on same machine.
-
-Since testing was done using localhostlocalhost (bypassing the physical network) there was no network latency, packet loss, or bandwidth constraints. However, clients are running inside a Marimo notebook with browser updates, which will have significant impact on performance with large number of concurrent clients.
-
-Baseline testcase is a single client running at replay speed = 1.0speed = 1.0 - it takes roughly 2 minutes2 minutes to publish all data events. With [1, 10,100, 1000][1, 10,100, 1000] clients running at speed = 1.0speed = 1.0, there is no performance impact.
-
-To test the *'pedal to the metal'* performance, a single client session was run in this notepad, at replay speed = 10000.0speed = 10000.0.
-
-All 34533453 events were published by the replay server in 00:00:00:01300:00:00:013, a throughput of about 265,615265,615 events/sec.
-
-On the notebook client all event were received and logged in 00:00:00:35700:00:00:357.
-
-| # Sessions | Replay Speed | Duration <br> hh:mm:ss:zzzhh:mm:ss:zzz|
-|------------|--------------|--------------|
-| 1          | 1            | 00:01:58:195 |
-| 10         | 1            | 00:01:58:172 |
-| 100        | 1            | 00:01:58:162 |
-| 1000       | 1            | 00:01:58:162 |
-|------------|--------------|--------------|
-| 1          | 10           | 00:00:11:818 |
-| 10         | 10           | 00:00:11:777 |
-| 100        | 10           | 00:00:11:787 |
-| 200        | 10           | 00:00:14:203 |
-| 400        | 10           | 00:00:22:156 |
-| 500        | 10           | 00:00:25:950 |
-| 600        | 10           | 00:00:32:068 |
-|------------|--------------|--------------|
-| 1          | 10000        | 00:00:00:067 |
-| 10         | 10000        | 00:00:00:072 |
-| 100        | 10000        | 00:00:00:094 |
-| 200        | 10000        | 00:00:00:067 |
-| 400        | 10000        | 00:00:00:067 |
-| 600        | 10000        | 00:00:00:067 |
-<!--
-![performance latency plot](https://github.com/himalayahall/demo/blob/01cb141736dc521652c7aa6685c080ac31d9e7e7/src/main/marimo/performance.png) -->
-
-```{.python.marimo}
-import matplotlib.pyplot as plt
-
-# Sample list of timestamps with format hh:mm:ss (time taken for requests)
-times_in_seconds = [11, 11, 11, 14, 22, 25, 32]
-
-# Generate the X-axis labels representing the number of clients (1, 2, 3, ...)
-clients = [1, 10, 100, 200, 400, 500, 600]
-
-# Plot the processing times per client
-plt.figure(figsize=(10, 5))
-plt.plot(clients, times_in_seconds, marker="o", linestyle="-", color="b", label="Replay Time")
-
-# Format the plot
-plt.xlabel("Number of Clients")
-plt.ylabel("Replay Time (seconds)")
-plt.title("Replay Time at Fixed Speed (10.0)")
-plt.xticks(clients)  # Label X-axis with client numbers
-plt.legend()
-plt.grid(True)
-
-# Show the plot
-plt.show()
 ```
 
 ### Suggestions for Improving Performance
