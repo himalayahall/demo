@@ -238,24 +238,24 @@ def _(mo):
          <a id="create-session"></a>
         4. Create replay session
 
-        > - Click POST /mktdata/session.
-        > - Click TryitoutTry it out.
-        > - Click Execute. A new session will be created. Copy the session ID from the Response body.
+        > - Click `POST /mktdata/session`.
+        > - Click `Try it out`.
+        > - Click `Execute`. A new session will be created. Copy the session ID from the Response body.
 
         <a id="stop-session"></a>
         5. Stop replay session
 
-        > - Click PUT /mktdata/session/stop/{sessionId}.
-        > - Click TryitoutTry it out.
-        > - Click Execute. Logs will confirm session has been stopped. PUT operations are idempotent and produce the same result no matter how many times they are called. Interleaving different operations may produce different results.
+        > - Click `PUT /mktdata/session/stop/{sessionId}`.
+        > - Click `Try it out`.
+        > - Click `Execute`. Logs will confirm session has been stopped. PUT operations are idempotent and produce the same result no matter how many times they are called. Interleaving different operations may produce different results.
 
         <a id="start-session"></a>
         6. Start replay session
 
-        >- Click PUT /mktdata/session/start/{sessionId}.
-        > - Click TryitoutTry it out.
-        > - Paste session ID into SessionIdSession Id textbox.
-        > - Click Execute. This will start the newly created replay session. Replay service TRACE logs for published events will be visible in the terminal window. And after replay session completes, a summary will be logged
+        >- Click `PUT /mktdata/session/start/{sessionId}`.
+        > - Click `Try it out`.
+        > - Paste session ID into Session Id textbox.
+        > - Click `Execute`. This will start the newly created replay session. Replay service TRACE logs for published events will be visible in the terminal window. And after replay session completes, a summary will be logged
               with the start time, end time, and duration of the replay session. This baseline replays the full dataset at **normal** speed in approximately 00:01:58 (1 minute, 58 seconds). Last market data event has id=3453.
 
         > - Once a session has completed playing the **full** market data stream, it is automatically **terminated**. Terminated sessions **cannot be restarted**. However, while a session is midstream, it may freely be started, stopped, rewound, forwarded, sped up or down, jumped to specific event.
@@ -265,12 +265,12 @@ def _(mo):
           <a id="rewind-session"></a>
         7. Rewind session
 
-        > - Click PUT /mktdata/session/rewind/{sessionId}PUT /mktdata/session/rewind/{sessionId}, click Try it outTry it out, paste session ID into Session Id textbox, and click Execute. Logs will show the session has been rewound.
+        > - Click `PUT /mktdata/session/rewind/{sessionId}`, click Try it out, paste session ID into Session Id textbox, and click Execute. Logs will show the session has been rewound.
 
         <a id="change-replay-speed"></a> 
         8. Change replay speed
 
-        > - Click PUT /mktdata/session/speed/{sessionId}/{speed}PUT /mktdata/session/speed/{sessionId}/{speed}, click Try it outTry it out, paste session ID into Session Id textbox, enter 2.0 in speed textbox. Click Execute. Confirm replay speed has been doubled (see logs).
+        > - Click `PUT /mktdata/session/speed/{sessionId}/{speed}`, click `Try it out, paste session ID into Session Id textbox, enter 2.0 in speed textbox. Click Execute. Confirm replay speed has been doubled (see logs).
 
         9. [Start](#start-session) the replay session. Events will start streaming at the new speed. When this replay session finishes take a look at the service log tail. Replay **duration** should be approximately *half* the previous replay session since the stream was replayed at *twice* the normal speed.
 
