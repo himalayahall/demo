@@ -97,10 +97,10 @@ def _(mo):
         - **Spring Boot application** with **RESTful APIs** for replay controls.
         - **Reactive SpringFlux** application for streaming market data events.
         - **Data** -> read from [CSV file](https://github.com/himalayahall/demo/blob/9f346eac082b2ba9300041759bce3413532ba7fa/src/main/resources/marketdata-for-coding-challenge.csv). FYI - file had invisible BOM (invisible byte-order mark) which caused a lot of head scratching before I pinpointed the cause and fixed it (see below).
-        - **Session cache** - sessions are stored in Google Guava cache, **stale** sessions are ejected after a configurable timeout in application.properties. Default cache cofiguration is 1HOUR1 HOUR.
+        - **Session cache** - sessions are stored in Google Guava cache, **stale** sessions are ejected after a configurable timeout in application.properties. Default cache cofiguration is `1 HOUR`.
         - **Sliding window** -> virtual sliding window moves over cached events, during each publishing cycle ALL events under sliding window are published. Sliding window and event publication controls are set through application.properties:
 
-            - **publishTimerMillis** -  controls how often the sliding window is moved, default: 1millisecond1 millisecond.
+            - **publishTimerMillis** -  controls how often the sliding window is moved, default: `1 millisecond`.
             - **replayClockMillis** - tracks progress of time in replay session; controls the sliding window size. When a session is created or rewound, the replayClockMillis is initialized to timestamp of the first data event. At each publishing cycle all unpublished events with $timestamp \leq replayClockMillis$ are published and then replayClockMillis is set to $replayClockMillis + (replaySpeed \times publishTimerMillis$).
 
           - **replaySpeed** - controls how fast the replay clock advances. For example, suppose  $publishTimerMillis =  1$ and $replaySpeed = 1.0$. During each publishing cycle replayClockMillis will advance by $replaySpeed \times publishTimerMillis$.
@@ -211,8 +211,8 @@ def _(mo):
 
           1. **Spring OpenAPI**  interface is baked into the application. To use this interface - [run the application](#running) and then go to http://localhost:8080/swagger-ui.html.
 
-          2. Use [curl](https://curl.se) to access the API. For example, execute curl-XGEThp:/localhost:8080session⊂scribee893be-3723-4c37-8681-b3fa6d3b7a79curl -X GET http://localhost:8080/session/subscribe/e8cc93be-3723-4c37-8681-b3fa6d3b7a79 from a terminal to subscribe for events on session 
-        e893be-3723-4c37-8681-b3fa6d3b7a79e8cc93be-3723-4c37-8681-b3fa6d3b7a79.
+          2. Use [curl](https://curl.se) to access the API. For example, execute `curl -X GET http://localhost:8080/session/subscribe/e8cc93be-3723-4c37-8681-b3fa6d3b7a79` from a terminal to subscribe for events on session 
+        e893be-3723-4c37-8681-b3fa6d3b7a79.
         """
     )
     return
