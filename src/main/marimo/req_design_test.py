@@ -230,7 +230,7 @@ def _(mo):
 
         1. Enable logging
 
-             > - In *application.properties*, locate logg∈g.≤vel.com.pragma.demo=INFOlogging.level.com.pragma.demo=INFO and replace it with logg∈g.≤vel.com.pragma.demo=TRACElogging.level.com.pragma.demo=TRACE. This will enable TRACE level logging which will be come in handy for manual testing.
+             > - In *application.properties*, locate logger.level.com.pragma.demo=INFO and replace it with logger.level.com.pragma.demo=TRACE. This will enable TRACE level logging which will be come in handy for manual testing.
 
         2. [Start replay service](#installation).
         3. Go to http://localhost:8080/swagger-ui.html.
@@ -238,25 +238,25 @@ def _(mo):
          <a id="create-session"></a>
         4. Create replay session
 
-        > - Click POSTmktdatasessionPOST /mktdata/session.
+        > - Click POST /mktdata/session.
         > - Click TryitoutTry it out.
-        > - Click ExecuteExecute. A new session will be created. Copy the session ID from the ResponsebodyResponse body.
+        > - Click Execute. A new session will be created. Copy the session ID from the Response body.
 
         <a id="stop-session"></a>
         5. Stop replay session
 
-        > - Click PUTmktdatasessions⊤sessionIdPUT /mktdata/session/stop/{sessionId}.
+        > - Click PUT /mktdata/session/stop/{sessionId}.
         > - Click TryitoutTry it out.
-        > - Click ExecuteExecute. Logs will confirm session has been stopped. PUTPUT operations in REST are idempotent and produce the same result no matter how many times they are called. Interleaving different operations may produce different results.
+        > - Click Execute. Logs will confirm session has been stopped. PUT operations are idempotent and produce the same result no matter how many times they are called. Interleaving different operations may produce different results.
 
         <a id="start-session"></a>
         6. Start replay session
 
-        >- Click PUTmktdatasession⋆tsessionIdPUT /mktdata/session/start/{sessionId}.
+        >- Click PUT /mktdata/session/start/{sessionId}.
         > - Click TryitoutTry it out.
         > - Paste session ID into SessionIdSession Id textbox.
-        > - Click ExecuteExecute. This will start the newly created replay session. Replay service TRACETRACE logs for published events will be visible in the terminal window. And after replay session completes, a summary will be logged
-              with the start time, end time, and duration of the replay session. This baseline replays the full dataset at **normal** speed in approximately 00:01:58(1min00:01:58 (1 minute, 58 seconds). Last market data event has id=3453id=3453.
+        > - Click Execute. This will start the newly created replay session. Replay service TRACE logs for published events will be visible in the terminal window. And after replay session completes, a summary will be logged
+              with the start time, end time, and duration of the replay session. This baseline replays the full dataset at **normal** speed in approximately 00:01:58 (1 minute, 58 seconds). Last market data event has id=3453.
 
         > - Once a session has completed playing the **full** market data stream, it is automatically **terminated**. Terminated sessions **cannot be restarted**. However, while a session is midstream, it may freely be started, stopped, rewound, forwarded, sped up or down, jumped to specific event.
 
@@ -265,16 +265,16 @@ def _(mo):
           <a id="rewind-session"></a>
         7. Rewind session
 
-        > - Click PUT /mktdata/session/rewind/{sessionId}PUT /mktdata/session/rewind/{sessionId}, click Try it outTry it out, paste session ID into Session IdSession Id textbox, and click ExecuteExecute. Logs will show the session has been rewound.
+        > - Click PUT /mktdata/session/rewind/{sessionId}PUT /mktdata/session/rewind/{sessionId}, click Try it outTry it out, paste session ID into Session Id textbox, and click Execute. Logs will show the session has been rewound.
 
         <a id="change-replay-speed"></a> 
         8. Change replay speed
 
-        > - Click PUT /mktdata/session/speed/{sessionId}/{speed}PUT /mktdata/session/speed/{sessionId}/{speed}, click Try it outTry it out, paste session ID into Session IdSession Id textbox, enter 2.0 in speedspeed textbox. Click ExecuteExecute. Confirm replay speed has been doubled (see logs).
+        > - Click PUT /mktdata/session/speed/{sessionId}/{speed}PUT /mktdata/session/speed/{sessionId}/{speed}, click Try it outTry it out, paste session ID into Session Id textbox, enter 2.0 in speed textbox. Click Execute. Confirm replay speed has been doubled (see logs).
 
         9. [Start](#start-session) the replay session. Events will start streaming at the new speed. When this replay session finishes take a look at the service log tail. Replay **duration** should be approximately *half* the previous replay session since the stream was replayed at *twice* the normal speed.
 
-        10. One final test to get a sense of the raw performance of replay service. First, [create](#create-session) a new replay session. Then [set](#change-replay-speed) replay speed for the new session to a large value, e.g. 1000.01000.0. Finally, [start](#start-session) the session. Replay server will finish playing events at a high rate in 00:00:00:566 (about half a second)00:00:00:566 (about half a second)!
+        10. One final test to get a sense of the raw performance of replay service. First, [create](#create-session) a new replay session. Then [set](#change-replay-speed) replay speed for the new session to a large value, e.g. 1000.0. Finally, [start](#start-session) the session. Replay server will finish playing events at a high rate in 00:00:00:566 (about half a second).
         """
     )
     return
@@ -292,7 +292,7 @@ def _(mo):
 
         #### Disable logging
 
-        > For performance testing it is important that excessive logging is disabled. If you had earlier changed the logging level to TRACETRACE for manual testing, now is a good time to revert back. Go to *application.properties*, locate logging.level.com.pragma.demo=TRACElogging.level.com.pragma.demo=TRACE and replace it with logging.level.com.pragma.demo=INFOlogging.level.com.pragma.demo=INFO.
+        > For performance testing it is important that excessive logging is disabled. If you had earlier changed the logging level to TRACETRACE for manual testing, now is a good time to revert back. Go to *application.properties*, locate logging.level.com.pragma.demo=TRACE and replace it with logging.level.com.pragma.demo=INFO.
         #### Prerequisites
 
           - Python 3.9.
@@ -302,7 +302,7 @@ def _(mo):
 
         After successfully installing Marimo, open a command line terminal, execute marimo tutorial intromarimo tutorial intro. This will launch Marimo with a introductory tutorial. 
 
-        Click on **settings icon** ⚙️ at the top right on Marimo page and from dropdown menu click User settingsUser settings. Click RuntimeRuntime and uncheck Autorun on startupAutorun on startup. **This setting change is important** to prevent Marimo from auto-executing tests when the Notebook is loaded. We want control over running the tests!
+        Click on **settings icon** ⚙️ at the top right on Marimo page and from dropdown menu click User settings. Click Runtime and uncheck Autorun on startup. This setting change is **important** to prevent Marimo from auto-executing tests when the Notebook is loaded. We want control over running the tests!
         """
     )
     return
@@ -699,7 +699,7 @@ def _(mo):
         ## Setup
         Building on above automation let's create the infra to do large scale experiments. Basically, run experiments with different number of replay sessions at different speeds.
 
-        Set up a mapping of client session counts to list of replay speeds. For each key in the map - i.e. number of clients - get the corresponding list of replay speeds. For each replay speed, create and run client sessions concurrently,   and capture the maximum `duration` across sessions.
+        Set up a mapping of client session counts to list of replay speeds. For each key in the map - i.e. number of clients - get the corresponding list of replay speeds. For each replay speed, create and run client sessions concurrently,   and capture the maximum durationduration across sessions.
         """
     )
     return
@@ -708,12 +708,14 @@ def _(mo):
 @app.cell
 def _():
     client_speed_map = {
-        1:   [0.5, 1.0, 2.0, 10.0],
-        10:  [0.5, 1.0, 2.0, 10.0],
-        50:  [0.5, 1.0, 2.0, 10.0],
-        100: [0.5, 1.0, 2.0, 10.0],
-        200: [0.5, 1.0, 2.0, 10.0],
-        500: [0.5, 1.0, 2.0, 10.0],
+        1:   [1.0, 2.0, 10.0],
+        50:  [10.0],
+        100: [10.0],
+        200: [10.0],
+        400: [10.0],
+        500: [10.0],
+        600: [10.0],
+        700: [10.0]
     }
     return (client_speed_map,)
 
@@ -759,7 +761,7 @@ def _(Any, Map):
     import plotly.express as px
 
     # Function to convert HH:MM:SS:ZZZ to total seconds
-    def time_to_seconds(time_str : str) -> str:
+    def time_to_seconds(time_str : str) -> int:
         hh, mm, ss, zzz = map(int, time_str.split(":"))
         return hh * 3600 + mm * 60 + ss + zzz / 1000
 
@@ -770,16 +772,33 @@ def _(Any, Map):
             num_clients = int(num_clients)
             speed = float(speed)
             time_sec = time_to_seconds(timestamp)
-            rows.append({"num_clients": num_clients, "speed": speed, "time_sec": time_sec})
+            rows.append({"num_clients": num_clients, "speed": speed, "duration_sec": time_sec})
         df = pd.DataFrame(rows)
         return df
 
     def plot(df : Any) -> None:
-        # Create line plot
-        fig = px.line(df, x="num_clients", y="time_sec", color="speed",
-                      markers=True, labels={"time_sec": "Max Replay Time (seconds)", "num_clients": "Num Clients", "speed": "Speed"},
-                      title="Max Replay Time vs. Num Clients for Different Speeds")  
+        # # Create line plot
+        # fig = px.line(df, x="num_clients", y="duration_sec", color="speed",
+        #               markers=True, labels={"duration_sec": "Max Replay Time (seconds)", "num_clients": "Num Clients", "speed": "Speed"},
+        #               title="Max Replay Time vs. Num Clients for Different Speeds")  
+        # fig.show()
+
+        fig = px.line(df, 
+                      x="num_clients", 
+                      y="duration_sec", 
+                      color="speed",
+                      markers=True, 
+                      text="duration_sec",  # Add text labels
+                      labels={"duration_sec": "Max Replay Time (seconds)", 
+                              "num_clients": "Num Clients", 
+                              "speed": "Speed"},
+                      title="Max Replay Time vs. Num Clients for Different Speeds")
+
+        # Update layout for better text visibility
+        fig.update_traces(textposition="top center")  
+
         fig.show()
+        
     return create_df, pd, plot, px, time_to_seconds
 
 
@@ -793,40 +812,27 @@ def _(mo):
 
         Since testing was done using localhostlocalhost (bypassing the physical network) there was no network latency, packet loss, or bandwidth constraints. However, clients are running inside a Marimo notebook with browser updates, which will have significant impact on performance with large number of concurrent clients.
 
-        Baseline testcase is a single client running at replay speed = 1.0 - it takes roughly 2 minutes to publish all data events. To test the *'pedal to the metal'* performance, a single client session was run in this notepad, at replay `speed = 10000.0`. All `3453` events were published by the replay server in `00:00:00:013`, a throughput of about `265,615 events/sec`. On the notebook web client, all event were received in `00:00:00:357`.
+        Baseline testcase is a single client running at replay speed = 1.0 - it takes roughly 2 minutes to publish all data events. To test the *'pedal to the metal'* performance, a single client session was run in this notepad, at replay speed=10000.0. All 3453 events were published by the replay server in 00:00:00:013, a throughput of about 265,615 events/sec. On the notebook web client, all event were received in 00:00:00:357.
 
-        Plot and data from the automated experiments are shown below. At low speeds there is minimal impact from increasing number of clients. This may be due to the recorded data being sparse, so even large number of clients can be serviced without impacting throughput. 
+        Plot and data from the automated experiments are shown below. At low speeds there is no impact from increasing number of clients. This may be due to the recorded data being sparse, so even large number of clients can be serviced without degrading throughput. 
 
-        For $speed \ge\ 10$, replay duration grows (i.e. throughput decreases) for number of $clients \ge 200$; growth appears to be `linear`.
+        For $speed \ge\ 10$, replay duration grows (i.e. throughput decreases) as the number of $clients \ge 200$. AS number of clients increases from 200 and 400 there is a 41% corresponding increase in latency. However, rate of increase in latency tapers off at higher number of clients. A good result!
+
+        |   num_clients |   speed |   duration_sec |
+        |---------------|---------|----------------|
+        |             1 |      10 |         11.838 |
+        |             1 |       2 |         59.105 |
+        |             1 |       1 |        118.198 |
+        |            50 |      10 |         12.24  |
+        |           100 |      10 |         11.987 |
+        |           200 |      10 |         12.74  |
+        |           400 |      10 |         17.997 |
+        |           500 |      10 |         21.314 |
+        |           600 |      10 |         25.221 |
+        |           700 |      10 |         26.455 
 
         ![plot](https://github.com/himalayahall/demo/blob/2bb2c2b15165ac10633dfff71a8420e54fd08afa/src/main/resources/perf.png)
 
-        | num_clients | speed  | time_sec  |
-        |------------:|-------:|----------:|
-        |          1  |  10.0  |    11.838 |
-        |          1  |   2.0  |    59.106 |
-        |          1  |   1.0  |   118.199 |
-        |          1  |   0.5  |   236.394 |
-        |         10  |  10.0  |    11.835 |
-        |         10  |   2.0  |    59.109 |
-        |         10  |   1.0  |   118.206 |
-        |         10  |   0.5  |   236.399 |
-        |         50  |  10.0  |    11.898 |
-        |         50  |   2.0  |    59.134 |
-        |         50  |   1.0  |   118.231 |
-        |         50  |   0.5  |   236.422 |
-        |        100  |  10.0  |    11.994 |
-        |        100  |   2.0  |    59.189 |
-        |        100  |   1.0  |   118.320 |
-        |        100  |   0.5  |   236.452 |
-        |        200  |  10.0  |    12.891 |
-        |        200  |   2.0  |    59.392 |
-        |        200  |   1.0  |   118.519 |
-        |        200  |   0.5  |   236.728 |
-        |        500  |  10.0  |    61.944 |
-        |        500  |   2.0  |    65.990 |
-        |        500  |   1.0  |   120.554 |
-        |        500  |   0.5  |   238.020 |
         """
     )
     return
@@ -836,7 +842,7 @@ def _(mo):
 def _(create_df, experiments):
     from tabulate import tabulate
     df = create_df(experiments=experiments)
-    print(tabulate(df, headers='keys', tablefmt='github'))
+    print(tabulate(df, headers='keys', tablefmt='github', showindex=False))
     return df, tabulate
 
 
