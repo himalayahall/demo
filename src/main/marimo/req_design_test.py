@@ -694,11 +694,12 @@ async def _(compute_max_duration, display, sessions):
 def _(mo):
     mo.md(
         """
-        ### Experiments
+        ## Experiments
 
+        ## Setup
         Building on above automation let's create the infra to do large scale experiments. Basically, run experiments with different number of replay sessions at different speeds.
 
-        Set client session counts νmclientsnum_clients and desired speeds. Each combination of νmberofclients+speednumber of clients + speed is run and the maximum duration for each run is captured. After all runs are complete a line-plot is generated to get the server performance trendline.
+        Set up a mapping of client session counts to list of replay speeds. For each key in the map - i.e. number of clients - get the corresponding list of replay speeds. For each replay speed, create and run client sessions concurrently,   and capture the maximum `duration` across sessions.
         """
     )
     return
@@ -714,10 +715,7 @@ def _():
         200: [0.5, 1.0, 2.0, 10.0],
         500: [0.5, 1.0, 2.0, 10.0],
     }
-    # num_clients = [1, 25, 50, 100, 200, 400, 500, 600, 700, 800]
-    # speeds = [0.5, 1.0, 2.0, 5.0, 10.0]
-    experiments = {}
-    return client_speed_map, experiments
+    return (client_speed_map,)
 
 
 @app.cell
@@ -727,9 +725,9 @@ async def _(
     compute_max_duration,
     create_sessions,
     display,
-    experiments,
     set_speed,
 ):
+    experiments = {}
     for cnum, speeds in client_speed_map.items():
         # comment display if too many experiments    
         display(f"clients: {cnum}");
@@ -743,7 +741,16 @@ async def _(
 
             # comment display if too many experiments
             display(Markdown(f"> speed: {speed}, max duration: {max_duration}"))
-    return cnum, desc_speeds, key, max_duration, new_sessions, speed, speeds
+    return (
+        cnum,
+        desc_speeds,
+        experiments,
+        key,
+        max_duration,
+        new_sessions,
+        speed,
+        speeds,
+    )
 
 
 @app.cell
@@ -843,7 +850,7 @@ def _(df, plot):
 def _(mo):
     mo.md(
         r"""
-        ### Suggestions for Improving Performance
+        ### Suggestions for Performance Improvement
 
         - Run replay server and client on separate machines.
         - Make sure network interfaces on test machines support high throughput.
