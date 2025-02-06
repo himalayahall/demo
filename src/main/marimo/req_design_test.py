@@ -798,7 +798,6 @@ def _(Any, Map):
         fig.update_traces(textposition="top center")  
 
         fig.show()
-        
     return create_df, pd, plot, px, time_to_seconds
 
 
@@ -831,8 +830,7 @@ def _(mo):
         |           600 |      10 |         25.221 |
         |           700 |      10 |         26.455 
 
-        ![plot](https://github.com/himalayahall/demo/blob/2bb2c2b15165ac10633dfff71a8420e54fd08afa/src/main/resources/perf.png)
-
+        ![plot](https://github.com/himalayahall/demo/blob/bf81db6df5ffa06e1343b03c59ffed7682f4364c/src/main/marimo/perf.png)
         """
     )
     return

@@ -632,7 +632,7 @@ For $speed \ge\ 10$, replay duration grows (i.e. throughput decreases) as the nu
 |           600 |      10 |         25.221 |
 |           700 |      10 |         26.455
 
-![plot](https://github.com/himalayahall/demo/blob/2bb2c2b15165ac10633dfff71a8420e54fd08afa/src/main/resources/perf.png)
+![plot](https://github.com/himalayahall/demo/blob/bf81db6df5ffa06e1343b03c59ffed7682f4364c/src/main/marimo/perf.png)
 
 ```{.python.marimo}
 from tabulate import tabulate
