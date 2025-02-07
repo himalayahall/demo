@@ -2,6 +2,7 @@ package com.pragma.demo.services;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+import reactor.core.publisher.Sinks.EmitResult;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import java.time.Duration;
@@ -85,13 +86,21 @@ public class ReplaySessionImpl implements ReplaySession {
                     // Publish all events with timestamp <= simulationClockMillis
                     while (currentIndex.get() < events.size()
                             && events.get(currentIndex.get()).timestamp() <= replayClockMillis) {
-
                         MarketDataEvent event = events.get(currentIndex.getAndIncrement());
-                        Sinks.EmitResult result = eventSink.tryEmitNext(event);
+                        EmitResult result = eventSink.tryEmitNext(event);
                         if (result.isFailure()) {
                             log.error("Failed to emit event: {}, session: {}, result: {}", event,
                                     sessionId, result);
-                            // TODO: What to do in case of failure?
+                            switch (result)
+                            {
+                                case FAIL_TERMINATED:
+                                case FAIL_CANCELLED:
+                                    isRunning.set(false);
+                                    isTerminated.set(true);
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
                         else {
                             log.trace("replay event: {} on session: {}", event, sessionId);
