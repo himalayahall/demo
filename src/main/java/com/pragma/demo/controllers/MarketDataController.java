@@ -212,7 +212,7 @@ public class MarketDataController {
                 }
                 catch (IllegalArgumentException e) {
                         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                                        "Invalid UUID format");
+                                        "Invalid UUID format", e);
                 }
         }
 }

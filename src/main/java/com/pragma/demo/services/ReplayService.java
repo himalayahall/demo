@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.TimeZone;
 import java.util.UUID;
 
 
@@ -228,7 +229,9 @@ public class ReplayService {
         try {
             Resource resource = resourceLoader.getResource("classpath:" + dataFile);
             this.events = csvReader.readMarketDataEvents(resource);
-            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss:SSS");
+            
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss:SSS z");
+            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
             log.info("Events: {}, First: {}, Last: {}", this.events.size(),
                     sdf.format(new Date(this.events.get(0).timestamp())),
                     sdf.format(new Date(this.events.get(this.events.size() - 1).timestamp())));

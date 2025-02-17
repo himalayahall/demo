@@ -708,14 +708,16 @@ def _(mo):
 @app.cell
 def _():
     client_speed_map = {
-        1:   [1.0, 2.0, 10.0],
-        50:  [10.0],
-        100: [10.0],
-        200: [10.0],
-        400: [10.0],
-        500: [10.0],
-        600: [10.0],
-        700: [10.0]
+        10:  [0.5, 1.0, 10.0],
+        50:  [5.0, 10.0],
+        100: [5.0, 10.0],
+        200: [5.0, 10.0],
+        300: [5.0, 10.0],
+        400: [5.0, 10.0],
+        500: [5.0, 10.0],
+        600: [5.0, 10.0],
+        700: [5.0, 10.0],
+        800: [5.0, 10.0]
     }
     return (client_speed_map,)
 
@@ -777,12 +779,6 @@ def _(Any, Map):
         return df
 
     def plot(df : Any) -> None:
-        # # Create line plot
-        # fig = px.line(df, x="num_clients", y="duration_sec", color="speed",
-        #               markers=True, labels={"duration_sec": "Max Replay Time (seconds)", "num_clients": "Num Clients", "speed": "Speed"},
-        #               title="Max Replay Time vs. Num Clients for Different Speeds")  
-        # fig.show()
-
         fig = px.line(df, 
                       x="num_clients", 
                       y="duration_sec", 
@@ -790,13 +786,12 @@ def _(Any, Map):
                       markers=True, 
                       text="duration_sec",  # Add text labels
                       labels={"duration_sec": "Max Replay Time (seconds)", 
-                              "num_clients": "Num Clients", 
+                              "num_clients": "Number of Clients", 
                               "speed": "Speed"},
-                      title="Max Replay Time vs. Num Clients for Different Speeds")
+                      title="Max Replay Time vs. Number Clients for Different Speeds")
 
         # Update layout for better text visibility
         fig.update_traces(textposition="top center")  
-
         fig.show()
     return create_df, pd, plot, px, time_to_seconds
 
@@ -807,7 +802,7 @@ def _(mo):
         """
         ### Experiment results
 
-        Below are performance test results were run on a Apple Macbook with 1.4 GHz Quad-Core Intel Core i5 with 16GB 2133 MHz RAM. Amazon Corretto 17 JDK, Heap Size (-Xmx and -Xms): 4096 MB. Client and server processes were running on same machine. 
+        Below are performance test results were run on a 2020 Apple Macbook with 1.4 GHz Quad-Core Intel Core i5 with 16GB 2133 MHz RAM. Amazon Corretto 17 JDK, Heap Size (-Xmx and -Xms): 4096 MB. Client and server processes were running on same machine. 
 
         Since testing was done using localhostlocalhost (bypassing the physical network) there was no network latency, packet loss, or bandwidth constraints. However, clients are running inside a Marimo notebook with browser updates, which will have significant impact on performance with large number of concurrent clients.
 
