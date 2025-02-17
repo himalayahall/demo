@@ -51,7 +51,7 @@ public class MarketDataController {
                                 .onErrorResume(ReplayException.class,
                                                 e -> Mono.error(new ResponseStatusException(
                                                                 HttpStatus.NOT_FOUND,
-                                                                e.getMessage())));
+                                                                e.getMessage(), e)));
         }
 
         @PutMapping("/session/stop/{sessionId}")
@@ -70,7 +70,7 @@ public class MarketDataController {
                                 .onErrorResume(ReplayException.class,
                                                 e -> Mono.error(new ResponseStatusException(
                                                                 HttpStatus.NOT_FOUND,
-                                                                e.getMessage())));
+                                                                e.getMessage(), e)));
         }
 
         @PutMapping("/session/rewind/{sessionId}")
@@ -89,7 +89,7 @@ public class MarketDataController {
                                 .onErrorResume(ReplayException.class,
                                                 e -> Mono.error(new ResponseStatusException(
                                                                 HttpStatus.NOT_FOUND,
-                                                                e.getMessage())));
+                                                                e.getMessage(), e)));
         }
 
         @PutMapping("/session/jump/{sessionId}/{eventId}")
@@ -112,7 +112,7 @@ public class MarketDataController {
                                 .onErrorResume(ReplayException.class,
                                                 e -> Mono.error(new ResponseStatusException(
                                                                 HttpStatus.NOT_FOUND,
-                                                                e.getMessage())));
+                                                                e.getMessage(), e)));
         }
 
         @PutMapping("/session/forward/{sessionId}/{skipCount}")
@@ -135,7 +135,7 @@ public class MarketDataController {
                                 .onErrorResume(ReplayException.class,
                                                 e -> Mono.error(new ResponseStatusException(
                                                                 HttpStatus.NOT_FOUND,
-                                                                e.getMessage())));
+                                                                e.getMessage(), e)));
         }
 
         @PutMapping("/session/speed/{sessionId}/{speed}")
@@ -159,7 +159,7 @@ public class MarketDataController {
                                 .onErrorResume(ReplayException.class,
                                                 e -> Mono.error(new ResponseStatusException(
                                                                 HttpStatus.NOT_FOUND,
-                                                                e.getMessage())));
+                                                                e.getMessage(), e)));
         }
 
         @GetMapping(value = "/session/subscribe/{sessionId}", produces = "text/event-stream")
@@ -177,7 +177,7 @@ public class MarketDataController {
                                 .onErrorResume(ReplayException.class,
                                                 e -> Flux.error(new ResponseStatusException(
                                                                 HttpStatus.BAD_REQUEST,
-                                                                e.getMessage())));
+                                                                e.getMessage(), e)));
         }
 
         @GetMapping(value = "/session/subscribe_start/{sessionId}", produces = "text/event-stream")
@@ -195,7 +195,7 @@ public class MarketDataController {
                                 .onErrorResume(ReplayException.class,
                                                 e -> Flux.error(new ResponseStatusException(
                                                                 HttpStatus.BAD_REQUEST,
-                                                                e.getMessage())));
+                                                                e.getMessage(), e)));
         }
 
         private Flux<MarketDataEvent> doSubscribeStart(String sessionId) {
